@@ -1,0 +1,7 @@
+[
+{
+  "directory": "/code/lang-cxx/quetzal",
+  "command": "/usr/bin/c++  -I/code/lang-cxx/quetzal/quetzal -I/code/lang-cxx/quetzal/lib -std=gnu++11 -o CMakeFiles/quetzal.dir/src/quetzal.cpp.o -c /code/lang-cxx/quetzal/src/quetzal.cpp",
+  "file": "/code/lang-cxx/quetzal/src/quetzal.cpp"
+}
+]
