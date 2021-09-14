@@ -1,15 +1,13 @@
 #ifndef __LEXER_HPP__
 #define __LEXER_HPP__
-#include "data-structures.hpp"
+
+#include <string>
 
 namespace qtz
 {
-	class lexer
-	{
-	public:
-		lexer();
-		~lexer();
-	};
+	enum class token_types;
+	struct token;
+	struct token lexer(std::string);
 }
 
 #endif

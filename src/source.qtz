@@ -1,0 +1,9 @@
+@have qtz::internals
+@have qtz::stdlib
+@use std::console::io
+
+@main
+fn main() =>
+{
+	println("Hello, World!")	
+}
