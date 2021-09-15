@@ -1,6 +1,5 @@
-@have qtz::internals
-@have qtz::stdlib
-@use std::console::io
+@pkg stdlib
+@use std::io
 
 @main
 fn main() =>

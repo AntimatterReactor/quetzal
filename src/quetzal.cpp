@@ -28,6 +28,8 @@ int front_end(int argc, const char** argv)
 		std::cout << help_msg << std::flush;
 		return 0;
 	}
+	
+	qtz::lexer(argv[1]);
 	return 0;
 }
 
