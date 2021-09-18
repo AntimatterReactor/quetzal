@@ -29,7 +29,10 @@ int front_end(int argc, const char** argv)
 		return 0;
 	}
 	
-	qtz::lexer(argv[1]);
+	for (auto i : qtz::lexer("fn int main const int12v 12L var _string2 \"lol\"12MLOL"))
+	{
+		std::cout << i.val << ' ' << static_cast<int>(i.tt) << '\n';
+	}
 	return 0;
 }
 

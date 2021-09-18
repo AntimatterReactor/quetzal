@@ -8,29 +8,32 @@ namespace qtz
 {
 	enum class token_types
 	{
-		ARROW,
+		ARROW=1,
 
 		RCURL,
-		LCURL, 
+		LCURL,
 
 		FUNC,
 		VAR,
 		CONST,
-		TYPE,
-		PRIM,
+		PRIMTV,
 
 		STRLIT,
 		NUMBERS,
+		NUMMOD,
 		IDENT,
-
-		EOS,
-		NONE,
+		
+		EOS=0,
+		NONE=-1,
+		UNKNOWN=-2,
 	};
 
 	struct token
 	{
 		token_types tt;
 		std::string val;
+
+		void clear();
 	};
 	std::vector<token> lexer(std::string);
 }
