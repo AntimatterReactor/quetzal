@@ -1,0 +1,4 @@
+@once
+
+internal fn println(const chars)
+internal fn print(const chars)
