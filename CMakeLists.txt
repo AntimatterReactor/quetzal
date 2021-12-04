@@ -9,6 +9,10 @@ include_directories(quetzal "${PROJECT_SOURCE_DIR}/lib")
 
 add_executable(qtz
 	${PROJECT_SOURCE_DIR}/src/quetzal.cpp
+	${PROJECT_SOURCE_DIR}/src/common.cpp
+	${PROJECT_SOURCE_DIR}/src/cli.cpp
+	${PROJECT_SOURCE_DIR}/src/api.cpp
+	${PROJECT_SOURCE_DIR}/src/error.cpp
 	${PROJECT_SOURCE_DIR}/src/lexer.cpp
 	${PROJECT_SOURCE_DIR}/src/parser.cpp
 	${PROJECT_SOURCE_DIR}/src/ast-builder.cpp
