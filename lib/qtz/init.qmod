@@ -1,5 +1,0 @@
-%package stdlib
-%pkgnamespace std
-
-%modules public
-@module qstdio as io

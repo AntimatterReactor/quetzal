@@ -1,8 +1,3 @@
-@pkg stdlib
-@use std::io
-
-@main
-fn main() =>
-{
-	println("Hello, World!")	
-}
+@import stdlib as std;
+@using namespace std::io;
+@run fn(): println("Hello, World!");

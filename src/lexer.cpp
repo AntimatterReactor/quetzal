@@ -1,98 +1,163 @@
 #include "include/lexer.hpp"
+#include "include/common.hpp"
 
-#include <cctype>
 #include <string>
 #include <vector>
 #include <iostream>
+#include <bitset>
+#include <unordered_map>
 
 namespace qtz
 {
-	void token::clear()
+	static const std::unordered_map<std::string, TokenTypes> Keywords
+	(
+	 {
+		{"fn", TokenTypes::FUNC},
+		{"var", TokenTypes::VAR},
+		{"const", TokenTypes::CONST},
+		{"if", TokenTypes::IF},
+		{"else", TokenTypes::ELSE},
+		{"while", TokenTypes::WHILE},
+		{"for", TokenTypes::FOR},
+		{"return", TokenTypes::RETURN},
+		{"true", TokenTypes::TRUE},
+		{"false", TokenTypes::FALSE},
+	 }
+	);
+
+
+	static const std::unordered_map<std::string, TokenTypes> Operators
+	(
+	 {
+		{"+", TokenTypes::PLUS}, {"-", TokenTypes::MINUS},
+		{"*", TokenTypes::MUL}, {"/", TokenTypes::DIV},
+		{"%", TokenTypes::MOD},
+		{"=", TokenTypes::ASSIGN},
+		{"==", TokenTypes::EQ}, {"!=", TokenTypes::NEQ},
+		{"<", TokenTypes::LT}, {"<=", TokenTypes::LTE},
+		{">", TokenTypes::GT}, {">=", TokenTypes::GTE},
+		{"&&", TokenTypes::AND}, {"||", TokenTypes::OR}, {"!", TokenTypes::NOT},
+		{"(", TokenTypes::LPAREN}, {")", TokenTypes::RPAREN},
+		{"{", TokenTypes::LBRACE}, {"}", TokenTypes::RBRACE},
+		{"[", TokenTypes::LBRACKET}, {"]", TokenTypes::RBRACKET},
+		{",", TokenTypes::COMMA}, {";", TokenTypes::SEMICOLON},
+		{".", TokenTypes::DOT}, {":" , TokenTypes::COLON},
+	 }
+	);
+
+	void Token::clear()
 	{
-		this->tt = token_types::NONE;
+		this->tt = TokenTypes::NONE;
 		this->val.erase(this->val.begin(), this->val.end());
 	}
 
-	std::vector<token> lexer(std::string input)
+	// Generic escape function
+	std::uint8_t Lexer::escape(char input_char) const noexcept
 	{
-		std::vector<token> result;
-		token current;
-		bool in_string = false;
-		bool is_escaped = false;
-		bool is_ident = false;
-
-		for(int i = 0; i < input.length(); ++i)
+		char typescp = '0';
+		switch(input_char)
 		{
-			if(input[i] == '\"' && !is_escaped)
+			case 'a': return '\a';
+			case 'b': return '\b';
+			case 'f': return '\f';
+			case 'n': return '\n';
+			case 'r': return '\r';
+			case 't': return '\t';
+			case 'v': return '\v';
+			case '\'': // FALLTHROUGH 
+			case '\"': // FALLTHROUGH 
+			case '\\': return input_char;
+			case '0': if (!isdigit(next_char())) return '\0'; else typescp = 'o'; break;
+			case 'x': typescp = 'x'; break;
+			default:
+			// TODO: Add Warning Mechanism Here
+				break;
+		}
+
+		return input_char;
+	}
+
+	Lexer Lexer::tokenify()
+	{
+		std::vector<Token> result;
+		Token current;
+		std::bitset<0> flag (0);
+
+		enum Flags
+		{
+			FSTR   = 0,
+			FESC   = 1,
+			FIDENT = 2,
+		};
+
+		for(; this->i < this->len; this->i++)
+		{
+			if(curr_char() == '\"' && !flag[FESC]) // Handle String Literals
 			{
-				current.tt = token_types::STRLIT;
-				in_string = !in_string;
-				if(!in_string)
+				current.tt = TokenTypes::STRLIT;
+				flag[FSTR].flip();
+				if(!flag[FSTR])
 				{
 					result.push_back(current);
 					current.clear();
 				}
 			}
-			else if(in_string)
+			else if(flag[FSTR]) // Handle Escape Sequences
 			{
-				if(is_escaped)
+				if(flag[FESC])
 				{
-					switch(input[i]) 
-					{
-					case 'n': current.val.push_back('\n'); break;
-					case 'b': current.val.push_back('\b'); break;
-					case 't': current.val.push_back('\t'); break;
-					case 'v': current.val.push_back('\v'); break;
-					case '\\':
-					case '\'':
-					case '\"': current.val.push_back(input[i]); break;
-					}
-					is_escaped = false;
+					// Generic handling for escape sequences
+					current.val.push_back(escape(curr_char()));
+					flag[FESC] = false;
 					continue;
 				}
-				if(input[i] == '\\')
+				if(curr_char() == '\\')
 				{
-					is_escaped = true;
+					flag[FESC] = true;
 					continue;
 				}
-				else current.val.push_back(input[i]);
+				else current.val.push_back(curr_char());
 			}
-			else if(std::isdigit(input[i]) && !is_ident)
+			else if(std::isdigit(curr_char())) // Handle Number Literals
 			{
-				current.tt = token_types::NUMBERS;
-				current.val.push_back(input[i]);
-				if(i + 1 < input.length() ? !std::isdigit(input[i+1]): true)
+				current.tt = TokenTypes::NUMLIT;
+				current.val.push_back(curr_char());
+				if(!std::isdigit(next_char()))
 				{
 					result.push_back(current);
-					current.clear();
-				}
-			}
-			else if(std::isalnum(input[i]) || input[i] == '_')
-			{
-				if(std::isdigit(input[i-1]) && current.tt == token_types::NONE)
-				{
-					current.tt = token_types::NUMMOD;
-					current.val.push_back(input[i]);
-					result.push_back(current);
-					current.clear();
-				}
-				else
-				{
-					current.tt = token_types::IDENT;
-					current.val.push_back(input[i]);
-					is_ident = true;
-					if(i + 1 < input.length() ? !std::isalnum(input[i+1]) && input[i] != '_' : true)
+					if(std::isalpha(next_char()))
 					{
-						if(current.val == "fn") current.tt = token_types::FUNC;
-						else if(current.val == "var") current.tt = token_types::VAR;
-						else if(current.val == "const") current.tt = token_types::CONST;
+						current.tt = TokenTypes::NUMMOD;
+						current.val = next_char();
 						result.push_back(current);
-						current.clear();
-						is_ident = false;
+						this->i++;
 					}
+					current.clear();
 				}
+			}
+			else if(isidentchar(curr_char())) // Handle Identifiers
+			{
+				current.tt = TokenTypes::IDENTIFIER;
+				current.val.push_back(curr_char());
+				flag[FIDENT] = true;
+				if(!isidentchar(next_char()))
+				{
+					result.push_back(current);
+					current.clear();
+					flag[FIDENT] = false;
+				}
+			}
+			else
+			{
+
 			}
 		}
-		return result;
+		this->tokens = result;
+		return *this;
+	}
+
+	Lexer Lexer::categorify()
+	{
+		
 	}
 }

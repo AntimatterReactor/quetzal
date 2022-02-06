@@ -28,8 +28,10 @@ int front_end(int argc, const char** argv)
 		std::cout << help_msg << std::flush;
 		return 0;
 	}
-	
-	for (auto i : qtz::lexer("fn int main const int12v 12L var _string2 \"lol\"12MLOL"))
+	std::string ss = "fn int main const int12v 12L var _string2 \"lol\"12MLOL";
+	std::cout << ss << '\n';
+	qtz::Lexer lexer (ss);
+	for (auto i : lexer.tokenify().tokens)
 	{
 		std::cout << i.val << ' ' << static_cast<int>(i.tt) << '\n';
 	}

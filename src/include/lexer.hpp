@@ -1,41 +1,52 @@
 #ifndef __LEXER_HPP__
 #define __LEXER_HPP__
 
+#include <cstdint>
 #include <string>
 #include <vector>
 
+#include "common.hpp"
+
 namespace qtz
 {
-	enum class token_types
+	enum class TokenTypes
 	{
-		ARROW=1,
-
-		RCURL,
-		LCURL,
-
-		FUNC,
-		VAR,
-		CONST,
-		PRIMTV,
-
-		STRLIT,
-		NUMBERS,
-		NUMMOD,
-		IDENT,
-		
-		EOS=0,
-		NONE=-1,
-		UNKNOWN=-2,
+		LPAREN, RPAREN,
+		LBRACE, RBRACE,
+		LBRACKET, RBRACKET,
+		SEMICOLON, COMMA, DOT, COLON,
+		PLUS, MINUS, MUL, DIV, MOD, ASSIGN,
+		EQ, NEQ, LT, GT, LTE, GTE,
+		AND, OR, NOT,
+		IF, ELSE, WHILE, FOR,
+		FUNC, VAR, CONST, RETURN,
+		INT, FLOAT, STRING, BOOL,
+		TRUE, FALSE,
+		STRLIT, NUMLIT, NUMMOD,
+		IDENTIFIER,
+		EOF_TOKEN, NONE
 	};
 
-	struct token
+	struct Token
 	{
-		token_types tt;
+		TokenTypes tt;
 		std::string val;
 
 		void clear();
 	};
-	std::vector<token> lexer(std::string);
+	
+	class Lexer : protected virtual IndexItem<std::string, char>
+	{
+	public:
+		Lexer(std::string code_string) noexcept
+			: IndexItem(code_string, code_string.length()) {}
+		~Lexer() {}
+	public:
+		std::vector<Token> tokens;
+		uint8_t escape(char) const noexcept;
+		Lexer tokenify();
+		Lexer categorify(); 
+	};
 }
 
 #endif
