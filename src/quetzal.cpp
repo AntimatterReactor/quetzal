@@ -3,42 +3,38 @@
 #include <string>
 #include <vector>
 #include <iostream>
-
 #include <cstring>
 
-const char* help_msg = \
-"\
-Usage: qtz [options] ... [file]\n\
-\n\
-Options:\n\
-	-h, --help	Display this message and exit\n\
-	-v, --version	Display current version and exit\n\
-";
+#define OPTION(f, s, l) !(std::strcmp(f, s) && std::strcmp(f, l))
 
-int front_end(int argc, const char** argv)
-{
-	if (argc < 2)
-	{
-		std::cout << help_msg << std::flush;
+static inline void print_help() {
+	std::cout
+		<< "Usage: quetzal [options] files..." << '\n'
+		<< "Options:" << '\n'
+		<< "\t-h, --help\t\t\tPrint this help message" << std::endl;
+}
+
+static int front_end(const int argc, const char** argv) {
+	if (argc < 2) {
+		print_help();
 		return 0;
 	}
 
-	if (std::strcmp(argv[1], "--help") == 0 || std::strcmp(argv[1], "-h") == 0)
-	{
-		std::cout << help_msg << std::flush;
+	if (OPTION(argv[1], "-h", "--help")) {
+		print_help();
 		return 0;
 	}
-	std::string ss = "fn int main const int12v 12L var _string2 \"lol\"12MLOL";
+
+	std::string ss = "fn int main() {\n\tconst int12v = 12L;\n\tvar _string2 = \"lol\";\n\t12L&&int12v";
 	std::cout << ss << '\n';
 	qtz::Lexer lexer (ss);
-	for (auto i : lexer.tokenify().tokens)
-	{
+	for (auto i : lexer.tokenify().tokens) {
 		std::cout << i.val << ' ' << static_cast<int>(i.tt) << '\n';
 	}
 	return 0;
 }
 
-int main(int argc, const char** argv)
+int main(const int argc, const char** argv)
 {
 	front_end(argc, argv);
 	return 0;

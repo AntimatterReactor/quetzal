@@ -32,7 +32,7 @@ namespace qtz
 	bool isidentchar(char) noexcept;
 	std::string readFile(std::string);
 
-	// NOTE: IndexItem class-functions is defined here because templates
+	// NOTE: IndexItem class-functions is defined here because: templates
 	template<class Container, typename Value>
 	Value IndexItem<Container, Value>::prev_char() const noexcept
 	{return this->prev_valid() ? this->indexable[this->i-1] : 0 ;}

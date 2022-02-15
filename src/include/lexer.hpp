@@ -20,10 +20,9 @@ namespace qtz
 		AND, OR, NOT,
 		IF, ELSE, WHILE, FOR,
 		FUNC, VAR, CONST, RETURN,
-		INT, FLOAT, STRING, BOOL,
 		TRUE, FALSE,
 		STRLIT, NUMLIT, NUMMOD,
-		IDENTIFIER,
+		IDENT,
 		EOF_TOKEN, NONE
 	};
 
@@ -43,9 +42,8 @@ namespace qtz
 		~Lexer() {}
 	public:
 		std::vector<Token> tokens;
-		uint8_t escape(char) const noexcept;
+		std::uint8_t escape(char) const noexcept;
 		Lexer tokenify();
-		Lexer categorify(); 
 	};
 }
 
