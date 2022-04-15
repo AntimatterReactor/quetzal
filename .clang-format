@@ -8,4 +8,8 @@ AllowShortFunctionsOnASingleLine: All
 AllowShortIfStatementsOnASingleLine: AllIfsAndElse
 AllowShortLambdasOnASingleLine: All
 
-BreakBeforeBraces: Allman
+BreakBeforeBraces: Stroustrup
+
+AccessModifierOffset: 0
+EmptyLineBeforeAccessModifier: LogicalBlock
+IndentAccessModifiers: false

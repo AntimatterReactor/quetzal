@@ -1,32 +1,41 @@
 #ifndef __ERROR_HPP__
 #define __ERROR_HPP__
 
-#include <cstdio>
+#include <exception>
 #include <string>
 
-namespace qtz
-{
-struct Location
-{
-	std::string file;
+namespace qtz {
+struct Location {
 	int line;
 	int column;
 };
 
-class BasicError
-{
-      public:
-	BasicError(const std::string &message, const Location where)
-	    : e_message(message), e_where(where)
+class quetzal_error : public std::exception {
+	private:
+	std::string msg_;
+	Location loc_;
+
+	public:
+	quetzal_error(const std::string &message, const Location &location)
+	    : msg_(message), loc_(location)
 	{
 	}
-	~BasicError() {}
 
-	const std::string &getMessage() const;
+	quetzal_error(const char *message, const Location &location)
+	    : msg_(message), loc_(location)
+	{
+	}
 
-      protected:
-	std::string e_message;
-	Location e_where;
+	quetzal_error(const quetzal_error &other) noexcept
+	    : msg_(other.msg_), loc_(other.loc_)
+	{
+	}
+
+	virtual ~quetzal_error() noexcept {}
+
+	virtual const char *what() const noexcept { return msg_.c_str(); }
+
+	const Location &where() const noexcept { return loc_; }
 };
 } // namespace qtz
 

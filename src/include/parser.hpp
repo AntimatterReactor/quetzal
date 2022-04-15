@@ -7,17 +7,15 @@
 #include <string>
 #include <vector>
 
-namespace qtz
-{
-class Parser
-{
-      public:
+namespace qtz {
+class Parser {
+	public:
 	Parser(Lexer &lexer);
 	~Parser();
 
 	void parse();
 
-      private:
+	private:
 	Lexer &lexer;
 	Token currentToken;
 	Token previousToken;

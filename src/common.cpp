@@ -2,13 +2,11 @@
 
 #include <iostream>
 
-namespace qtz
-{
+namespace qtz {
 std::string readFile(std::string fileName)
 {
 	std::ifstream file(fileName);
-	if (!file.is_open())
-	{
+	if (!file.is_open()) {
 		std::cerr << "Error: Could not open file " << fileName
 			  << std::endl;
 		return "";
@@ -24,8 +22,7 @@ std::string readFile(std::string fileName)
 void writeFile(std::string fileName, std::string contents)
 {
 	std::ofstream file(fileName);
-	if (!file.is_open())
-	{
+	if (!file.is_open()) {
 		std::cerr << "Error: Could not open file " << fileName
 			  << std::endl;
 		return;

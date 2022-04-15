@@ -16,14 +16,12 @@ static inline void print_help()
 
 static int front_end(const int argc, const char **argv)
 {
-	if (argc < 2)
-	{
+	if (argc < 2) {
 		print_help();
 		return 0;
 	}
 
-	if (OPTION(argv[1], "-h", "--help"))
-	{
+	if (OPTION(argv[1], "-h", "--help")) {
 		print_help();
 		return 0;
 	}
@@ -32,8 +30,7 @@ static int front_end(const int argc, const char **argv)
 			 "_string2 = \"lol\";\n\t12L&&int12v";
 	std::cout << ss << '\n';
 	qtz::Lexer lexer(ss);
-	for (auto i : lexer.tokenify().tokens)
-	{
+	for (auto i : lexer.tokenify().tokens) {
 		std::cout << i.val << ' ' << static_cast<int>(i.tt) << '\n';
 	}
 	return 0;

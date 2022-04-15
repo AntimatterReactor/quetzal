@@ -4,8 +4,7 @@
 #include <fstream>
 #include <string>
 
-namespace qtz
-{
+namespace qtz {
 static constexpr bool isidentchar(char __c) noexcept
 {
 	return (std::isalpha(__c) || __c == '_');
