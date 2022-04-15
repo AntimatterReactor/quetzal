@@ -5,6 +5,11 @@ project(quetzal VERSION 0.0.1 LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
+set(CMAKE_CXX_FLAGS_DEBUG_INIT "-Wall -Wextra -Wpedantic -Og -g3 \
+-fsanitize=address -Wuseless-cast -Wcast-align -Wcast-qual -Wduplicated-branches \
+-Wduplicated-cond -Wempty-body -Wfloat-equal -Wformat=2 -Winit-self -Wmissing-braces")
+set(CMAKE_CXX_FLAGS_RELEASE_INIT "-Wall -Wdisabled-optimization -O3 -DNDEBUG")
+
 include_directories(quetzal "${PROJECT_SOURCE_DIR}/lib")
 
 add_executable(qtz
