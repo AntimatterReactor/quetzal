@@ -3,6 +3,5 @@ build/
 .cache/
 .vim/
 .clangd
-.clang-format
 autobuild.sh
 compile_commands.json
