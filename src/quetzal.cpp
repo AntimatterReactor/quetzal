@@ -25,7 +25,7 @@ static int front_end(const int argc, const char** argv) {
 		return 0;
 	}
 
-	std::string ss = "fn int main() {\n\tconst int12v = 12L;\n\tvar _string2 = \"lol\";\n\t12L&&int12v";
+	std::string ss = "fn int main() {\n\t~~~\n\tconst int12v = 12L;\n\tvar _string2 = \"lol\";\n\t12L&&int12v";
 	std::cout << ss << '\n';
 	qtz::Lexer lexer (ss);
 	for (auto i : lexer.tokenify().tokens) {

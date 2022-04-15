@@ -9,7 +9,7 @@
 
 namespace qtz
 {
-	enum class TokenTypes
+	enum class TTypes
 	{
 		LPAREN, RPAREN,
 		LBRACE, RBRACE,
@@ -23,27 +23,42 @@ namespace qtz
 		TRUE, FALSE,
 		STRLIT, NUMLIT, NUMMOD,
 		IDENT,
-		EOF_TOKEN, NONE
+		NONE = -1
 	};
 
 	struct Token
 	{
-		TokenTypes tt;
+		TTypes tt;
 		std::string val;
 
-		void clear();
+		void clear() noexcept;
+		void push(const char c) noexcept;
+		void push(const TTypes tt, const char c) noexcept;
 	};
 	
-	class Lexer : protected virtual IndexItem<std::string, char>
+	class Lexer
 	{
 	public:
-		Lexer(std::string code_string) noexcept
-			: IndexItem(code_string, code_string.length()) {}
-		~Lexer() {}
-	public:
-		std::vector<Token> tokens;
-		std::uint8_t escape(char) const noexcept;
+		static constexpr char escape(char) noexcept;
 		Lexer tokenify();
+
+	protected:
+		std::vector<Token> tokens;
+		std::size_t i, len;
+		std::string code_;
+
+	private:
+		template<long N>
+		constexpr bool offset_valid() noexcept { return i+N < len; }
+
+		template<long Offset = 0>
+		char access_char() const noexcept
+		{ return offset_valid<Offset> ? code_.at(i+Offset) : 0; }
+
+	public:
+		Lexer(std::string code_string) noexcept
+			: i(0), len(code_string.size()), code_(std::move(code_string)) {}
+		~Lexer() {}
 	};
 }
 

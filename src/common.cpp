@@ -4,15 +4,6 @@
 
 namespace qtz
 {
-	bool BasicIndex::next_valid() const noexcept {return i+1 < len;}
-	bool BasicIndex::prev_valid() const noexcept {return i-1 < len;}
-	bool isidentchar(char __c) noexcept
-	{
-		return ((__c >= 'A' && __c <= 'Z') ||
-			(__c >= 'a' && __c <= 'z') ||
-			(__c >= '0' && __c <= '9') || __c == '_');
-	}
-
 	std::string readFile(std::string fileName)
 	{
 		std::ifstream file(fileName);
