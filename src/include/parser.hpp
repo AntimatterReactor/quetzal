@@ -3,32 +3,42 @@
 
 #include "common.hpp"
 #include "lexer.hpp"
+
 #include <string>
-#include <unordered_set>
+#include <vector>
 
 namespace qtz
 {
-	struct TreeNode
-	{
-		int type;
-		Token value;
-		TreeNode *parentNode;
-		TreeNode *siblingNode;
-		TreeNode *childNode;
-	};
+class Parser
+{
+      public:
+	Parser(Lexer &lexer);
+	~Parser();
 
-	class ParseTree : virtual public std::unordered_set<TreeNode*>
-	{
-	public:
-		ParseTree(TreeNode *root) : unordered_set() {}
-		~ParseTree() {}
-	};
+	void parse();
 
-	class Parser
-	{
+      private:
+	Lexer &lexer;
+	Token currentToken;
+	Token previousToken;
 
-	};
-}
+	void parseProgram();
+	void parseStatement();
+	void parseExpression();
+	void parseAssignment();
+	void parseVariable();
+	void parseFunction();
+	void parseFunctionCall();
+	void parseFunctionArguments();
+	void parseIf();
+	void parseElse();
+	void parseWhile();
+	void parseFor();
+	void parseReturn();
+	void parseBreak();
+	void parseContinue();
+	void parseBlock();
+};
+} // namespace qtz
 
 #endif
-

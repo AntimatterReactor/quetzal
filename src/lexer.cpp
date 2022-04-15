@@ -94,8 +94,7 @@ Lexer Lexer::tokenify()
 				current.clear();
 			}
 		}
-		else if (flag[FSTR])
-		{
+		else if (flag[FSTR]) {
 			// Handle Escape Sequences
 			if (flag[FESC])
 			{
@@ -109,8 +108,7 @@ Lexer Lexer::tokenify()
 
 		else if (std::isspace(access_char())) continue;
 
-		else if (std::isdigit(access_char()) && !flag[FIDENT])
-		{
+		else if (std::isdigit(access_char()) && !flag[FIDENT]) {
 			// Handle Number Literals
 			current.push(TTypes::NUMLIT, access_char());
 			if (!std::isdigit(access_char<1>()))
@@ -126,8 +124,7 @@ Lexer Lexer::tokenify()
 				current.clear();
 			}
 		}
-		else if (flag[FIDENT] || isidentchar(access_char()))
-		{
+		else if (flag[FIDENT] || isidentchar(access_char())) {
 			// Handle Identifiers
 			current.push(TTypes::IDENT, access_char());
 			flag[FIDENT] = true;
@@ -141,8 +138,7 @@ Lexer Lexer::tokenify()
 				flag[FIDENT] = false;
 			}
 		}
-		else if (std::ispunct(access_char()))
-		{
+		else if (std::ispunct(access_char())) {
 			current.push(access_char());
 			flag[FOP] = true;
 			if (!std::ispunct(access_char<1>()))

@@ -6,25 +6,28 @@
 
 namespace qtz
 {
-	struct Location
-	{
-		std::string file;
-		int line;
-		int column;
-	};
+struct Location
+{
+	std::string file;
+	int line;
+	int column;
+};
 
-	class BasicError
+class BasicError
+{
+      public:
+	BasicError(const std::string &message, const Location where)
+	    : e_message(message), e_where(where)
 	{
-	public:
-		BasicError(const std::string& message, const Location where)
-			: e_message(message), e_where(where) {}
-		~BasicError() {}
+	}
+	~BasicError() {}
 
-		const std::string& getMessage() const;
-	protected:
-		std::string e_message;
-		Location e_where;
-	};
-}
+	const std::string &getMessage() const;
+
+      protected:
+	std::string e_message;
+	Location e_where;
+};
+} // namespace qtz
 
 #endif
