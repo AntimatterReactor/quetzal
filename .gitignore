@@ -2,6 +2,12 @@
 build/
 .cache/
 .vim/
+.vscode/
 .clangd
 autobuild.sh
 compile_commands.json
+
+
+# Added by cargo
+
+/target
