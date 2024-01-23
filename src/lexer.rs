@@ -16,7 +16,9 @@ pub enum TokenType {
     Comma,
     Dot,
     Colon,
+    Scope,
     Tilde,
+    Tick,
 
     Plus,
     Minus,
@@ -59,7 +61,6 @@ pub enum TokenType {
 
     StringLiteral,
     NumericLiteral,
-    NumericModifier,
     Identifier,
 }
 
@@ -74,12 +75,30 @@ impl TokenType {
             "]" => Self::RightBracket,
             "<" => Self::LeftAngle,
             ">" => Self::RightAngle,
+            ";" => Self::Semicolon,
+            "," => Self::Comma,
+            "." => Self::Dot,
+            ":" => Self::Colon,
+            "::" => Self::Scope,
+            "~" => Self::Tilde,
+            "`" => Self::Tick,
+            "+" => Self::Plus,
+            "-" => Self::Minus,
+            "*" => Self::Mul,
+            "/" => Self::Div,
+            "%" => Self::Modulo,
+            "/%" => Self::DivMod,
+            "=" => Self::Assign,
+            "-=" => Self::AssignMinus,
+            "*=" => Self::AssignMul,
+            "/=" => Self::AssignDiv,
+            "%=" => Self::AssignModulo,
             "?=" => Self::Equal,
             "?!=" => Self::NotEqual,
-            "?<=" => Self::LessThanEqual,
             "?<" => Self::LessThan,
-            "?>=" => Self::GreaterThanEqual,
             "?>" => Self::GreaterThan,
+            "?<=" => Self::LessThanEqual,
+            "?>=" => Self::GreaterThanEqual,
             "and" => Self::And,
             "or" => Self::Or,
             "not" => Self::Not,
@@ -149,6 +168,10 @@ impl Lexer {
             0x40..=0x5F => Ok((c as u8 - 0x40) as char),
             _ => Err(LexicalError::InvalidCaret(c)),
         }
+    }
+    
+    pub fn is_identifier_char(c: char) -> bool {
+        c.is_alphabetic() || c == '_'
     }
 }
 
