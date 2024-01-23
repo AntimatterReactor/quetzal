@@ -1,0 +1,2 @@
+require use std::io::IO
+fn main start IO::init().println("Hello World!") end -> 0

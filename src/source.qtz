@@ -1,3 +1,0 @@
-@import stdlib as std;
-@using namespace std::io;
-@run fn(): println("Hello, World!");

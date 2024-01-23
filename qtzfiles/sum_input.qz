@@ -1,0 +1,14 @@
+require use std::io::IO
+
+fn alias sum_str(impl x: Vec<String>) start x.map(|s| => s.to_int().expect("a number")).sum() end
+
+fn main start
+    let `limited io = IO::init()
+    io.println(
+        [
+            io.print("input a number: ").get().nln(),
+            io.print("input another number: ").get().nln()
+        ].sum_str().to_str().with_format("result: %")
+    )
+    destroy io // you can also use `~io` achieve the same purpose
+end -> 0
