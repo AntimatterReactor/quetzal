@@ -1,4 +1,5 @@
 use crate::error::LexicalError;
+use crate::token::{Token, TokenType};
 
 pub enum TokenType {
     None = 0,
