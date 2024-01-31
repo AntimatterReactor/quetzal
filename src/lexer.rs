@@ -141,13 +141,19 @@ impl Lexer {
 
     /// Turn escaped characters into their intended form
     ///
+    /// Only accepts `a b e f n r t v 0 ^ \ " '`,
+    /// othwerwise will return [`InvalidEscape`]
+    /// 
+    /// [`InvalidEscape`]: LexicalError::InvalidEscape
+    /// 
     /// # Example
-    /// # use quetzal::Lexer::escape;
-    /// # fn main() {
-    /// let c = escape('n');
-    /// assert_eq!('\n', c);
-    /// # }
-    pub fn escape(c: char) -> Result<char, LexicalError> {
+    /// 
+    /// ```rust
+    /// # use quetzal::Lexer;
+    /// let c = Lexer::escape('n');
+    /// assert_eq!(Ok('\n'), c);
+    /// ```
+    pub const fn escape(c: char) -> Result<char, LexicalError> {
         match c {
             'n' => Ok('\n'),
             'r' => Ok('\r'),
@@ -162,7 +168,24 @@ impl Lexer {
         }
     }
 
-    pub fn caret(c: char) -> Result<char, LexicalError> {
+    /// Caret characters like in terminals
+    /// 
+    /// Any alphabetic character following the caret must be
+    /// an uppercase letter. Using a lowercase letter will
+    /// result in an error being returned.
+    /// 
+    /// # Further Reference
+    /// 
+    /// See [Wikipedia's article on C0 (and C1) control codes](https://en.wikipedia.org/wiki/C0_and_C1_control_codes#C0_controls)
+    /// 
+    /// # Example
+    /// 
+    /// ```rust
+    /// # use quetzal::Lexer;
+    /// let c = Lexer::caret('J');
+    /// assert_eq!(Ok('\n'), c);
+    /// ```
+    pub const fn caret(c: char) -> Result<char, LexicalError> {
         match c as u32 {
             0x3F => Ok(0x7F as char),
             0x40..=0x5F => Ok((c as u8 - 0x40) as char),
