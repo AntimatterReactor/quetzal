@@ -194,10 +194,6 @@ impl Lexer {
             _ => Err(LexicalError::InvalidCaret(c)),
         }
     }
-    
-    pub fn is_identifier_char(c: char) -> bool {
-        c.is_alphabetic() || c == '_'
-    }
 }
 
 #[cfg(test)]
