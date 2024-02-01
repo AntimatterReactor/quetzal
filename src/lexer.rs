@@ -143,7 +143,7 @@ impl Lexer {
     /// Turn escaped characters into their intended form
     ///
     /// Only accepts `a b e f n r t v 0 ^ \ " '`,
-    /// othwerwise will return [`InvalidEscape`]
+    /// otherwise will return [`InvalidEscape`]
     /// 
     /// [`InvalidEscape`]: LexicalError::InvalidEscape
     /// 
@@ -165,6 +165,7 @@ impl Lexer {
             'v' => Ok(0x0B as char),
             'f' => Ok(0x0C as char),
             'e' => Ok(0x1B as char),
+            '^' | '\\' | '\"' | '\'' => Ok(c),
             _ => Err(LexicalError::InvalidEscape(c)),
         }
     }
