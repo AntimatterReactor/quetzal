@@ -65,7 +65,7 @@ impl Lexer {
     pub fn get_str(&mut self) -> Result<Token, LexicalError> {
         // Due to the way this is used, make sure that the first character
         // is a double quotation so that it can be safely skipped
-        if self.line[self.current] == b'"' {
+        if self.line[self.current] != b'"' {
             return Err(LexicalError::StringWithoutLiteral);
         }
         self.current += 1;
@@ -105,11 +105,12 @@ impl Lexer {
 
     pub fn get_ident(&mut self) -> Token {
         let mut number = String::new();
-        while let Some(x @ 0x30..=0x39) = self.line.get(self.current) {
+        while let Some(x @ 0x30..=0x39 | x @ 0x41..=0x5A | x @ 0x61..=0x7A | x @ 0x5F)
+            = self.line.get(self.current) {
             number.push(*x as char);
             self.current += 1;
         }
-        Token(TokenType::NumericLiteral, number)
+        Token(TokenType::Identifier, number)
     }
 
     /// Turns an operator into it's corresponding [`Token`] form
