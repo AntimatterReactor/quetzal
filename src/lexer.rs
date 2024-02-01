@@ -1,143 +1,151 @@
 use crate::error::LexicalError;
 use crate::token::{Token, TokenType};
 
-pub enum TokenType {
-    None = 0,
-
-    LeftParen,
-    RightParen,
-    LeftBrace,
-    RightBrace,
-    LeftBracket,
-    RightBracket,
-    LeftAngle,
-    RightAngle,
-
-    Semicolon,
-    Comma,
-    Dot,
-    Colon,
-    Scope,
-    Tilde,
-    Tick,
-
-    Plus,
-    Minus,
-    Mul,
-    Div,
-    Modulo,
-    DivMod,
-
-    Assign,
-    AssignMinus,
-    AssignMul,
-    AssignDiv,
-    AssignModulo,
-
-    Equal,
-    NotEqual,
-    LessThan,
-    GreaterThan,
-    LessThanEqual,
-    GreaterThanEqual,
-
-    And,
-    Or,
-    Not,
-
-    If,
-    Else,
-
-    Loop,
-    While,
-    For,
-
-    Function,
-    LetDecl,
-    ConstDecl,
-    Return,
-
-    True,
-    False,
-
-    StringLiteral,
-    NumericLiteral,
-    Identifier,
-}
-
-impl TokenType {
-    pub fn to_token_type(s: &str) -> Self {
-        match s {
-            "(" => Self::LeftParen,
-            ")" => Self::RightParen,
-            "{" => Self::LeftBrace,
-            "}" => Self::RightBrace,
-            "[" => Self::LeftBracket,
-            "]" => Self::RightBracket,
-            "<" => Self::LeftAngle,
-            ">" => Self::RightAngle,
-            ";" => Self::Semicolon,
-            "," => Self::Comma,
-            "." => Self::Dot,
-            ":" => Self::Colon,
-            "::" => Self::Scope,
-            "~" => Self::Tilde,
-            "`" => Self::Tick,
-            "+" => Self::Plus,
-            "-" => Self::Minus,
-            "*" => Self::Mul,
-            "/" => Self::Div,
-            "%" => Self::Modulo,
-            "/%" => Self::DivMod,
-            "=" => Self::Assign,
-            "-=" => Self::AssignMinus,
-            "*=" => Self::AssignMul,
-            "/=" => Self::AssignDiv,
-            "%=" => Self::AssignModulo,
-            "?=" => Self::Equal,
-            "?!=" => Self::NotEqual,
-            "?<" => Self::LessThan,
-            "?>" => Self::GreaterThan,
-            "?<=" => Self::LessThanEqual,
-            "?>=" => Self::GreaterThanEqual,
-            "and" => Self::And,
-            "or" => Self::Or,
-            "not" => Self::Not,
-            "if" => Self::If,
-            "else" => Self::Else,
-            "loop" => Self::Loop,
-            "while" => Self::While,
-            "for" => Self::For,
-            "fn" => Self::Function,
-            "let" => Self::LetDecl,
-            "const" => Self::ConstDecl,
-            "ret" => Self::Return,
-            "true" => Self::True,
-            "false" => Self::False,
-            _ => Self::None,
-        }
-    }
-}
-
-pub struct Token(TokenType, String);
-
+/// Lexer object. Consists of the line
+/// it's currently evaluating and the position
+/// in the line it's currently on.
+#[derive(Debug)]
 pub struct Lexer {
-    tokens: Vec<Token>,
+    line: Vec<u8>,
     current: usize,
-    line: String,
 }
 
+/// Implements all the function necessary to
+/// lexicalize a line of quetzal code.
 impl Lexer {
+    /// Constructs a new empty [`Lexer`]
+    /// 
+    /// # Example
+    /// 
+    /// ```rust
+    /// # #![allow(unused_mut)]
+    /// # use quetzal::Lexer;
+    /// let mut lexer = Lexer::new();
+    /// ```
     pub fn new() -> Lexer {
-        Lexer { tokens: Vec::new(), current: 0, line: String::new() }
+        Lexer {
+            line: Vec::new(),
+            current: 0,
+        }
     }
 
+    /// Changes the current stored line into the
+    /// next/new one
+    pub fn line(&mut self, line: String) -> &mut Self {
+        self.line = line.into_bytes();
+        self.current = 0;
+        self
+    }
 
-    pub fn tokenify(&self) -> Result<&Self, LexicalError> {
-        for c in self.line.chars() {
-
+    pub fn tokenify(&mut self) -> Result<Vec<Token>, LexicalError> {
+        while self.current + 1 < self.line.len() {
+            break;
         }
-        Ok(self)
+        Err(LexicalError::SingleLinedLiteralMultiLinedString)
+    }
+
+    /// Turns a string into it's corresponding [`Token`] form
+    /// 
+    /// The usage of this function by itself is not recommended,
+    /// as it will panic when called incorrectly, that is, when
+    /// the current starting byte is not a double quotation mark.
+    /// 
+    /// # Panics
+    /// 
+    /// Panics when `self.line[self.current] != b'"'`.
+    /// 
+    /// # Example
+    /// 
+    /// ```rust
+    /// # use quetzal::{Lexer, Token, TokenType};
+    /// let mut lexer = Lexer::new();
+    /// let tok = lexer.line("\"abc\"".to_string()).get_str();
+    /// assert_eq!(Ok(Token(TokenType::StringLiteral, "abc".to_string())), tok);
+    /// ```
+    pub fn get_str(&mut self) -> Result<Token, LexicalError> {
+        // Due to the way this is used, make sure that the first character
+        // is a double quotation so that it can be safely skipped
+        if self.line[self.current] == b'"' {
+            return Err(LexicalError::StringWithoutLiteral);
+        }
+        self.current += 1;
+
+        let mut strstring = String::new();
+        while let Some(c) = self.line.get(self.current) {
+            strstring.push(match c {
+                &b'"' => return Ok(Token(TokenType::StringLiteral, strstring)),
+                &b'\\' => {
+                    self.current += 1;
+                    Self::escape(self.line.get(self.current)
+                        .ok_or(LexicalError::SingleLinedLiteralMultiLinedString)?
+                        .to_owned().into())?
+                },
+                &b'^' => {
+                    self.current += 1;
+                    Self::caret(self.line.get(self.current)
+                        .ok_or(LexicalError::SingleLinedLiteralMultiLinedString)?
+                        .to_owned().into())?
+                },
+                &_ => (*c).into()
+            });
+            self.current += 1;
+        }
+        Err(LexicalError::SingleLinedLiteralMultiLinedString)
+    }
+
+    
+    pub fn get_int(&mut self) -> Token {
+        let mut number = String::new();
+        while let Some(x @ 0x30..=0x39) = self.line.get(self.current) {
+            number.push(*x as char);
+            self.current += 1;
+        }
+        Token(TokenType::NumericLiteral, number)
+    }
+
+    pub fn get_ident(&mut self) -> Token {
+        let mut number = String::new();
+        while let Some(x @ 0x30..=0x39) = self.line.get(self.current) {
+            number.push(*x as char);
+            self.current += 1;
+        }
+        Token(TokenType::NumericLiteral, number)
+    }
+
+    /// Turns an operator into it's corresponding [`Token`] form
+    /// 
+    /// The usage of this function by itself is not recommended,
+    /// as it will panic when called incorrectly, that is, when
+    /// the current starting byte is not a punctuation.
+    /// 
+    /// # Panics
+    /// 
+    /// Panics when `self.line[self.current].is_ascii_punctuation() == false`.
+    /// 
+    /// # Example
+    /// 
+    /// ```rust
+    /// # use quetzal::{Lexer, Token, TokenType};
+    /// let mut lexer = Lexer::new();
+    /// let tok = lexer.line("+=".to_string()).get_op();
+    /// assert_eq!(Ok(Token(TokenType::AssignPlus, "+=".to_string())), tok);
+    /// ```
+    pub fn get_op(&mut self) -> Result<Token, LexicalError> {
+        // Make sure that the current character is indeed a punctuation
+        assert!(self.line[self.current].is_ascii_punctuation());
+        
+        let mut collect = String::new();
+
+        while let Some(c) = self.line.get(self.current) {
+            if c.is_ascii_punctuation() {
+                collect.push((*c).into());
+            } else {
+                break
+            }
+            self.current += 1;
+        }
+
+        Ok(Token(TokenType::try_from(collect.as_str())?, collect))
     }
 
     /// Turn escaped characters into their intended form
