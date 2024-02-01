@@ -19,7 +19,7 @@ impl Lexer {
     /// 
     /// ```rust
     /// # #![allow(unused_mut)]
-    /// # use quetzal::Lexer;
+    /// # use libquetzal::Lexer;
     /// let mut lexer = Lexer::new();
     /// ```
     pub fn new() -> Lexer {
@@ -57,7 +57,7 @@ impl Lexer {
     /// # Example
     /// 
     /// ```rust
-    /// # use quetzal::{Lexer, Token, TokenType};
+    /// # use libquetzal::{Lexer, Token, TokenType};
     /// let mut lexer = Lexer::new();
     /// let tok = lexer.line("\"abc\"".to_string()).get_str();
     /// assert_eq!(Ok(Token(TokenType::StringLiteral, "abc".to_string())), tok);
@@ -93,7 +93,16 @@ impl Lexer {
         Err(LexicalError::SingleLinedLiteralMultiLinedString)
     }
 
-    
+    /// Turns an integer into it's corresponding [`Token`] form
+    /// 
+    /// # Example
+    /// 
+    /// ```rust
+    /// # use libquetzal::{Lexer, Token, TokenType};
+    /// let mut lexer = Lexer::new();
+    /// let tok = lexer.line("13412231".to_string()).get_int();
+    /// assert_eq!(Token(TokenType::NumericLiteral, "13412231".to_string()), tok);
+    /// ```
     pub fn get_int(&mut self) -> Token {
         let mut number = String::new();
         while let Some(x @ 0x30..=0x39) = self.line.get(self.current) {
@@ -103,6 +112,24 @@ impl Lexer {
         Token(TokenType::NumericLiteral, number)
     }
 
+    /// Turns an identifier into it's corresponding [`Token`] form
+    /// 
+    /// Recognizes `0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_`
+    /// as valid identifier.
+    /// 
+    /// Note that under normal circumstances because `int` is searched first,
+    /// identifying `121341` as [`Identifier`] should not happen
+    /// 
+    /// [`Identifier`]: TokenType::Identifier
+    /// 
+    /// # Example
+    /// 
+    /// ```rust
+    /// # use libquetzal::{Lexer, Token, TokenType};
+    /// let mut lexer = Lexer::new();
+    /// let tok = lexer.line("asdegagt23_".to_string()).get_ident();
+    /// assert_eq!(Token(TokenType::Identifier, "asdegagt23_".to_string()), tok);
+    /// ```
     pub fn get_ident(&mut self) -> Token {
         let mut number = String::new();
         while let Some(x @ 0x30..=0x39 | x @ 0x41..=0x5A | x @ 0x61..=0x7A | x @ 0x5F)
@@ -126,7 +153,7 @@ impl Lexer {
     /// # Example
     /// 
     /// ```rust
-    /// # use quetzal::{Lexer, Token, TokenType};
+    /// # use libquetzal::{Lexer, Token, TokenType};
     /// let mut lexer = Lexer::new();
     /// let tok = lexer.line("+=".to_string()).get_op();
     /// assert_eq!(Ok(Token(TokenType::AssignPlus, "+=".to_string())), tok);
@@ -159,7 +186,7 @@ impl Lexer {
     /// # Example
     /// 
     /// ```rust
-    /// # use quetzal::Lexer;
+    /// # use libquetzal::Lexer;
     /// let c = Lexer::escape('n');
     /// assert_eq!(Ok('\n'), c);
     /// ```
@@ -192,7 +219,7 @@ impl Lexer {
     /// # Example
     /// 
     /// ```rust
-    /// # use quetzal::Lexer;
+    /// # use libquetzal::Lexer;
     /// let c = Lexer::caret('J');
     /// assert_eq!(Ok('\n'), c);
     /// ```
