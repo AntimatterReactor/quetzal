@@ -11,7 +11,7 @@ Quetzal is a name for a handful of bird species from South America, also associa
 
 ### Some History
 
-I started this project, chosen this name approximately around the year of 2020.
+I started this project, chosen this name approximately around the year of 2021.
 I was a middle schooler back then, young and naive, but otherwise surprisingly good with programming.
 
 Most of my current semi-obsession with language design stems from my first encounter with such arcane ideas, [Alex Apostolu's _Night_](https://github.com/alexapostolu/night).
@@ -58,3 +58,8 @@ Quetzal, also known as `quetzalc` is not to be confused with:
     - [Quetzal-RDF's SQL translation engine](https://github.com/Quetzal-RDF/quetzal)
     - [systragroup's modeling library](https://github.com/QuetzalMX/QuetzalXLSReader)
     - etc...
+
+## License
+
+This Program is licensed under the GNU Lesser General Public License version 3.0 or later.<br>
+For more information, see [COPYING](COPYING) and [COPYING.LESSER](COPYING.LESSER).
