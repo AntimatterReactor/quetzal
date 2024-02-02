@@ -38,10 +38,25 @@ impl Lexer {
     }
 
     pub fn tokenify(&mut self) -> Result<Vec<Token>, LexicalError> {
-        while self.current + 1 < self.line.len() {
-            break;
+        let mut line_result: Vec<Token> = Vec::new();
+        while let Some(c) = self.line.get(self.current) {
+            line_result.push(match c {
+                &b'"' => self.get_str()?,
+                &(b'0'..=b'9') => self.get_int(),
+                &(b'A'..=b'Z') | &(b'a'..=b'z') | &b'_' => self.get_ident(),
+                o if o.is_ascii_punctuation() => self.get_op()?,
+                x if x.is_ascii() => {
+                    self.current += 1;
+                    continue;
+                }
+                _ => {
+                    return Err(LexicalError::InvalidTokenMatch(
+                        char::from(c.to_owned()).into(),
+                    ))
+                }
+            })
         }
-        Err(LexicalError::SingleLinedLiteralMultiLinedString)
+        Ok(line_result)
     }
 
     /// Turns a string into it's corresponding [`Token`] form
