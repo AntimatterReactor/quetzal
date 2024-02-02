@@ -1,8 +1,25 @@
+//! Everything regarding the tokens themselves
+// Copyright (C) 2024  Ezra Alvarion
+
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Lesser General Public License for more details.
+
+// You should have received a copy of the GNU Lesser General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 use crate::error::LexicalError;
 
 #[derive(Debug, Default, PartialEq, Eq)]
 pub enum TokenType {
-    #[default] None,
+    #[default]
+    None,
 
     LeftParen,
     RightParen,
@@ -121,7 +138,7 @@ impl TryFrom<&str> for TokenType {
             "ret" => Ok(Self::Return),
             "true" => Ok(Self::True),
             "false" => Ok(Self::False),
-            _ => Err(LexicalError::InvalidTokenMatch(s.to_string()))
+            _ => Err(LexicalError::InvalidTokenMatch(s.to_string())),
         }
     }
 }
