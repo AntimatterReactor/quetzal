@@ -1,16 +1,22 @@
-use std::{error::Error, fmt::{Display, self, Formatter}};
+use std::{
+    error::Error,
+    fmt::{self, Display, Formatter},
+};
 
 #[derive(Debug)]
 pub struct Location {
     line: usize,
-    column: usize
+    column: usize,
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub enum LexicalError {
     InvalidCaret(char),
     InvalidEscape(char),
-    SyntaxError
+    InvalidTokenMatch(String),
+    SingleLinedLiteralMultiLinedString,
+
+    StringWithoutLiteral,
 }
 
 impl Display for LexicalError {
