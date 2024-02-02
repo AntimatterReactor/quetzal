@@ -257,4 +257,26 @@ impl Lexer {
 }
 
 #[cfg(test)]
-mod tests {}
+mod tests {
+    use super::Lexer;
+    use crate::token::{Token, TokenType};
+
+    #[test]
+    fn lex_scope() {
+        let mut lexer = Lexer::new();
+        let l = lexer
+            .line("require use std::io::IO".to_string())
+            .tokenify()
+            .unwrap();
+        let v: Vec<Token> = vec![
+            Token(TokenType::Identifier, "require".to_string()),
+            Token(TokenType::Identifier, "use".to_string()),
+            Token(TokenType::Identifier, "std".to_string()),
+            Token(TokenType::Scope, "::".to_string()),
+            Token(TokenType::Identifier, "io".to_string()),
+            Token(TokenType::Scope, "::".to_string()),
+            Token(TokenType::Identifier, "IO".to_string()),
+        ];
+        assert_eq!(l, v);
+    }
+}
