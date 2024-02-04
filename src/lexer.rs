@@ -309,4 +309,32 @@ mod tests {
         ];
         assert_eq!(l, v);
     }
+
+    #[test]
+    fn lex_complex() {
+        let mut lexer = Lexer::new();
+        let l = lexer
+            .line("fn main start IO::init().println(\"Hello World!\") end -> 0".to_string())
+            .tokenify()
+            .unwrap();
+        let v: Vec<Token> = vec![
+            Token(TokenType::Identifier, "fn".to_string()),
+            Token(TokenType::Identifier, "main".to_string()),
+            Token(TokenType::Identifier, "start".to_string()),
+            Token(TokenType::Identifier, "IO".to_string()),
+            Token(TokenType::Scope, "::".to_string()),
+            Token(TokenType::Identifier, "init".to_string()),
+            Token(TokenType::LeftParen, "(".to_string()),
+            Token(TokenType::RightParen, ")".to_string()),
+            Token(TokenType::Dot, ".".to_string()),
+            Token(TokenType::Identifier, "println".to_string()),
+            Token(TokenType::LeftParen, "(".to_string()),
+            Token(TokenType::StringLiteral, "Hello World!".to_string()),
+            Token(TokenType::RightParen, ")".to_string()),
+            Token(TokenType::Identifier, "end".to_string()),
+            Token(TokenType::ThinArrow, "->".to_string()),
+            Token(TokenType::NumericLiteral, "0".to_string()),
+        ];
+        assert_eq!(l, v);
+    }
 }
