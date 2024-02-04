@@ -104,7 +104,10 @@ impl Lexer {
         let mut strstring = String::new();
         while let Some(c) = self.line.get(self.current) {
             strstring.push(match c {
-                &b'"' => return Ok(Token(TokenType::StringLiteral, strstring)),
+                &b'"' => {
+                    self.current += 1;
+                    return Ok(Token(TokenType::StringLiteral, strstring));
+                }
                 &b'\\' => {
                     self.current += 1;
                     Self::escape(
