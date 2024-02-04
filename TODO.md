@@ -17,8 +17,10 @@
 
 ## Backend
 
-- [ ] use `inkwell` to use `llvm` to make quetzal (JIT) compiled
+- <s>use `inkwell` to use `llvm` to make quetzal (JIT) compiled</s> too complex, unsustainable, and unready.
+- [ ] use `llvm-ir`?
+- [ ] make the compilation code in c and link things up as an extern C library?
 
 ## Chore
 
-- [ ] copyright text on top of every file
+- [x] copyright text on top of every file

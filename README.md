@@ -23,14 +23,16 @@ Most of my current semi-obsession with language design stems from my first encou
 Use the following cargo command in your favorite shell:
 
 ```sh
-$ cargo install quetzalc
+$ cargo install quetzal-lang
 ```
+
+Note that, for clarity sake: from this point on, the repo is named `quetzal`, the crate is called `quetzal-lang`, the library is called `libquetzal`, and the executable `quetzalc`. This is indeed confusing on all levels.
 
 ### Building
 
 ```sh
-$ git clone git@github.com:AntimatterReactor/quetzalc.git
-$ cd quetzalc
+$ git clone git@github.com:AntimatterReactor/quetzal.git
+$ cd quetzal
 $ cargo build
 ```
 
