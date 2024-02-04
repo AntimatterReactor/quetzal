@@ -216,7 +216,18 @@ impl Lexer {
             self.current += 1;
         }
 
-        Ok(Token(TokenType::try_from(collect.as_str())?, collect))
+        Ok(Token(
+            loop {
+                match TokenType::try_from(collect.as_str()) {
+                    Ok(x) => break x,
+                    Err(_) => {
+                        collect.pop();
+                        self.current -= 1;
+                    }
+                }
+            },
+            collect,
+        ))
     }
 
     /// Turn escaped characters into their intended form
