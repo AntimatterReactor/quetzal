@@ -47,12 +47,35 @@ impl Lexer {
 
     /// Changes the current stored line into the
     /// next/new one
+    ///
+    /// # Example
+    ///
+    /// ```no_run
+    /// # use libquetzal::{Lexer, Token, TokenType};
+    /// let mut lexer = Lexer::new();
+    /// lexer.line("\"foo\"".to_string()); // line is now "abc"
+    /// lexer.line("bar12".to_string()); // line is now bar12
+    /// ```
     pub fn line(&mut self, line: String) -> &mut Self {
         self.line = line.into_bytes();
         self.current = 0;
         self
     }
 
+    /// The main entry point for lexing an entire line
+    ///
+    /// # Example
+    /// 
+    /// ```rust
+    /// # use libquetzal::{Lexer, Token, TokenType};
+    /// let mut lexer = Lexer::new();
+    /// let l = lexer.line("fn main".to_string()).tokenify().unwrap();
+    /// let v: Vec<Token> = vec![
+    ///     Token(TokenType::Identifier, "fn".to_string()),
+    ///     Token(TokenType::Identifier, "main".to_string()),
+    /// ];
+    /// assert_eq!(l, v);
+    /// ```
     pub fn tokenify(&mut self) -> Result<Vec<Token>, LexicalError> {
         let mut line_result: Vec<Token> = Vec::new();
         while let Some(c) = self.line.get(self.current) {
@@ -76,14 +99,6 @@ impl Lexer {
     }
 
     /// Turns a string into it's corresponding [`Token`] form
-    ///
-    /// The usage of this function by itself is not recommended,
-    /// as it will panic when called incorrectly, that is, when
-    /// the current starting byte is not a double quotation mark.
-    ///
-    /// # Panics
-    ///
-    /// Panics when `self.line[self.current] != b'"'`.
     ///
     /// # Example
     ///
