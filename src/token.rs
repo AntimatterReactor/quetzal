@@ -86,10 +86,8 @@ pub enum TokenType {
     Identifier,
 }
 
-impl TryFrom<&str> for TokenType {
-    type Error = LexicalError;
-
-    fn try_from(s: &str) -> Result<Self, Self::Error> {
+impl TokenType {
+    pub fn from_op(s: &str) -> Result<Self, LexicalError> {
         match s {
             "(" => Ok(Self::LeftParen),
             ")" => Ok(Self::RightParen),
@@ -124,6 +122,14 @@ impl TryFrom<&str> for TokenType {
             "?>" => Ok(Self::GreaterThan),
             "?<=" => Ok(Self::LessThanEqual),
             "?>=" => Ok(Self::GreaterThanEqual),
+            "->" => Ok(Self::ThinArrow),
+            "=>" => Ok(Self::FatArrow),
+            _ => Err(LexicalError::InvalidTokenMatch(s.to_string())),
+        }
+    }
+
+    pub fn from_keyword(s: &str) -> Result<Self, LexicalError> {
+        match s {
             "and" => Ok(Self::And),
             "or" => Ok(Self::Or),
             "not" => Ok(Self::Not),

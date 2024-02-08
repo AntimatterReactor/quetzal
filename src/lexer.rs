@@ -15,6 +15,7 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 use crate::error::LexicalError;
+use crate::parser::Parser;
 use crate::token::{Token, TokenType};
 
 /// Lexer object. Consists of the line
@@ -29,54 +30,37 @@ pub struct Lexer {
 /// Implements all the function necessary to
 /// lexicalize a line of quetzal code.
 impl Lexer {
-    /// Constructs a new empty [`Lexer`]
+    /// Constructs a new [`Lexer`] with `line`
+    /// as the line to be evaluated.
     ///
     /// # Example
     ///
     /// ```rust
     /// # #![allow(unused_mut)]
     /// # use libquetzal::Lexer;
-    /// let mut lexer = Lexer::new();
+    /// let lexer = Lexer::new("\"foo\"".to_string());
     /// ```
-    pub fn new() -> Lexer {
-        Lexer {
-            line: Vec::new(),
+    pub fn new(line: String) -> Lexer {
+        Self {
+            line: line.into_bytes(),
             current: 0,
         }
-    }
-
-    /// Changes the current stored line into the
-    /// next/new one
-    ///
-    /// # Example
-    ///
-    /// ```no_run
-    /// # use libquetzal::{Lexer, Token, TokenType};
-    /// let mut lexer = Lexer::new();
-    /// lexer.line("\"foo\"".to_string()); // line is now "abc"
-    /// lexer.line("bar12".to_string()); // line is now bar12
-    /// ```
-    pub fn line(&mut self, line: String) -> &mut Self {
-        self.line = line.into_bytes();
-        self.current = 0;
-        self
     }
 
     /// The main entry point for lexing an entire line
     ///
     /// # Example
-    /// 
+    ///
     /// ```rust
     /// # use libquetzal::{Lexer, Token, TokenType};
-    /// let mut lexer = Lexer::new();
-    /// let l = lexer.line("fn main".to_string()).tokenify().unwrap();
+    /// let l = Lexer::new("fn main".to_string()).lexicalize().unwrap();
     /// let v: Vec<Token> = vec![
     ///     Token(TokenType::Identifier, "fn".to_string()),
     ///     Token(TokenType::Identifier, "main".to_string()),
     /// ];
-    /// assert_eq!(l, v);
+    /// assert_eq!(l, v.into());
     /// ```
-    pub fn tokenify(&mut self) -> Result<Vec<Token>, LexicalError> {
+    pub fn lexicalize(&mut self) -> Result<Parser, LexicalError> {
         let mut line_result: Vec<Token> = Vec::new();
         while let Some(c) = self.line.get(self.current) {
             line_result.push(match c {
@@ -95,7 +79,7 @@ impl Lexer {
                 }
             })
         }
-        Ok(line_result)
+        Ok(line_result.into())
     }
 
     /// Turns a string into it's corresponding [`Token`] form
@@ -104,8 +88,7 @@ impl Lexer {
     ///
     /// ```rust
     /// # use libquetzal::{Lexer, Token, TokenType};
-    /// let mut lexer = Lexer::new();
-    /// let tok = lexer.line("\"abc\"".to_string()).get_str();
+    /// let tok = Lexer::new("\"abc\"".to_string()).get_str();
     /// assert_eq!(Ok(Token(TokenType::StringLiteral, "abc".to_string())), tok);
     /// ```
     pub fn get_str(&mut self) -> Result<Token, LexicalError> {
@@ -156,8 +139,7 @@ impl Lexer {
     ///
     /// ```rust
     /// # use libquetzal::{Lexer, Token, TokenType};
-    /// let mut lexer = Lexer::new();
-    /// let tok = lexer.line("13412231".to_string()).get_int();
+    /// let tok = Lexer::new("13412231".to_string()).get_int();
     /// assert_eq!(Token(TokenType::NumericLiteral, "13412231".to_string()), tok);
     /// ```
     pub fn get_int(&mut self) -> Token {
@@ -183,8 +165,7 @@ impl Lexer {
     ///
     /// ```rust
     /// # use libquetzal::{Lexer, Token, TokenType};
-    /// let mut lexer = Lexer::new();
-    /// let tok = lexer.line("asdegagt23_".to_string()).get_ident();
+    /// let tok = Lexer::new("asdegagt23_".to_string()).get_ident();
     /// assert_eq!(Token(TokenType::Identifier, "asdegagt23_".to_string()), tok);
     /// ```
     pub fn get_ident(&mut self) -> Token {
@@ -212,8 +193,7 @@ impl Lexer {
     ///
     /// ```rust
     /// # use libquetzal::{Lexer, Token, TokenType};
-    /// let mut lexer = Lexer::new();
-    /// let tok = lexer.line("+=".to_string()).get_op();
+    /// let tok = Lexer::new("+=".to_string()).get_op();
     /// assert_eq!(Ok(Token(TokenType::AssignPlus, "+=".to_string())), tok);
     /// ```
     pub fn get_op(&mut self) -> Result<Token, LexicalError> {
@@ -233,11 +213,14 @@ impl Lexer {
 
         Ok(Token(
             loop {
-                match TokenType::try_from(collect.as_str()) {
+                match TokenType::from_op(collect.as_str()) {
                     Ok(x) => break x,
-                    Err(_) => {
-                        collect.pop();
-                        self.current -= 1;
+                    Err(e) => {
+                        if collect.pop().is_some() {
+                            self.current -= 1;
+                        } else {
+                            return Err(e);
+                        }
                     }
                 }
             },
@@ -301,6 +284,12 @@ impl Lexer {
     }
 }
 
+impl From<String> for Lexer {
+    fn from(value: String) -> Self {
+        Self::new(value)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::Lexer;
@@ -308,10 +297,8 @@ mod tests {
 
     #[test]
     fn lex_scope() {
-        let mut lexer = Lexer::new();
-        let l = lexer
-            .line("require use std::io::IO".to_string())
-            .tokenify()
+        let l = Lexer::new("require use std::io::IO".to_string())
+            .lexicalize()
             .unwrap();
         let v: Vec<Token> = vec![
             Token(TokenType::Identifier, "require".to_string()),
@@ -322,16 +309,15 @@ mod tests {
             Token(TokenType::Scope, "::".to_string()),
             Token(TokenType::Identifier, "IO".to_string()),
         ];
-        assert_eq!(l, v);
+        assert_eq!(l, v.into());
     }
 
     #[test]
     fn lex_complex() {
-        let mut lexer = Lexer::new();
-        let l = lexer
-            .line("fn main start IO::init().println(\"Hello World!\") end -> 0".to_string())
-            .tokenify()
-            .unwrap();
+        let l =
+            Lexer::new("fn main start IO::init().println(\"Hello World!\") end -> 0".to_string())
+                .lexicalize()
+                .unwrap();
         let v: Vec<Token> = vec![
             Token(TokenType::Identifier, "fn".to_string()),
             Token(TokenType::Identifier, "main".to_string()),
@@ -350,6 +336,6 @@ mod tests {
             Token(TokenType::ThinArrow, "->".to_string()),
             Token(TokenType::NumericLiteral, "0".to_string()),
         ];
-        assert_eq!(l, v);
+        assert_eq!(l, v.into());
     }
 }
