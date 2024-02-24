@@ -58,9 +58,9 @@ impl Lexer {
     ///     Token(TokenType::Identifier, "fn".to_string()),
     ///     Token(TokenType::Identifier, "main".to_string()),
     /// ];
-    /// assert_eq!(l, v.into());
+    /// assert_eq!(l, v);
     /// ```
-    pub fn lexicalize(&mut self) -> Result<Parser, LexicalError> {
+    pub fn lexicalize(&mut self) -> Result<Vec<Token>, LexicalError> {
         let mut line_result: Vec<Token> = Vec::new();
         while let Some(c) = self.line.get(self.current) {
             line_result.push(match c {
@@ -79,7 +79,7 @@ impl Lexer {
                 }
             })
         }
-        Ok(line_result.into())
+        Ok(line_result)
     }
 
     /// Turns a string into it's corresponding [`Token`] form
@@ -309,7 +309,7 @@ mod tests {
             Token(TokenType::Scope, "::".to_string()),
             Token(TokenType::Identifier, "IO".to_string()),
         ];
-        assert_eq!(l, v.into());
+        assert_eq!(l, v);
     }
 
     #[test]
@@ -336,6 +336,6 @@ mod tests {
             Token(TokenType::ThinArrow, "->".to_string()),
             Token(TokenType::NumericLiteral, "0".to_string()),
         ];
-        assert_eq!(l, v.into());
+        assert_eq!(l, v);
     }
 }
