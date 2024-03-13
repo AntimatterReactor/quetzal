@@ -23,10 +23,10 @@ pub enum TokenType {
 
     LeftParen,
     RightParen,
-    LeftBrace,
-    RightBrace,
     LeftBracket,
     RightBracket,
+    LeftCurl,
+    RightCurl,
     LeftAngle,
     RightAngle,
 
@@ -77,6 +77,7 @@ pub enum TokenType {
     LetDecl,
     ConstDecl,
     Return,
+    Defer,
 
     True,
     False,
@@ -91,10 +92,10 @@ impl TokenType {
         match s {
             "(" => Ok(Self::LeftParen),
             ")" => Ok(Self::RightParen),
-            "{" => Ok(Self::LeftBrace),
-            "}" => Ok(Self::RightBrace),
             "[" => Ok(Self::LeftBracket),
             "]" => Ok(Self::RightBracket),
+            "{" => Ok(Self::LeftCurl),
+            "}" => Ok(Self::RightCurl),
             "<" => Ok(Self::LeftAngle),
             ">" => Ok(Self::RightAngle),
             ";" => Ok(Self::Semicolon),
@@ -141,7 +142,8 @@ impl TokenType {
             "fn" => Ok(Self::Function),
             "let" => Ok(Self::LetDecl),
             "const" => Ok(Self::ConstDecl),
-            "ret" => Ok(Self::Return),
+            "return" => Ok(Self::Return),
+            "defer" => Ok(Self::Defer),
             "true" => Ok(Self::True),
             "false" => Ok(Self::False),
             _ => Err(LexicalError::InvalidTokenMatch(s.to_string())),
