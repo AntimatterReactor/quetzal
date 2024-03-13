@@ -1,7 +1,11 @@
 [package]
 name = "quetzal-lang"
 version = "0.0.1"
+authors = ["Ezra Alvarion <ezraalvarion71@gmail.com>"]
 edition = "2021"
+license = "LGPL-3.0-or-later"
+keywords = ["e621", "api", "furry"]
+categories = ["compilers", "command-line-utilities"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -20,7 +24,9 @@ name = "quetzalintegration"
 
 [dependencies]
 clap = "4"
-rustyline = "13"
+log = "0.4"
+llvm-sys-160 = { package = "llvm-sys", version = "160", features = ["prefer-static"] }
+inkwell = { version = "0.4", features = ["llvm16-0"] }
 
 [dev-dependencies]
 criterion = "0.5"
