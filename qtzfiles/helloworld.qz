@@ -1,2 +1,5 @@
-require use std::io::IO
-fn main start IO::init().println("Hello World!") end -> 0
+require use std::io::stdio
+
+fn [::]main {
+    stdio::println("Hello World!")
+} -> void
