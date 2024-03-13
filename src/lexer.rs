@@ -22,29 +22,26 @@ use crate::token::{Token, TokenType};
 /// it's currently evaluating and the position
 /// in the line it's currently on.
 #[derive(Debug)]
-pub struct Lexer {
-    line: Vec<u8>,
+pub struct Lexer<'l> {
+    line: &'l [u8],
     current: usize,
 }
 
 /// Implements all the function necessary to
 /// lexicalize a line of quetzal code.
-impl Lexer {
+impl<'l> Lexer<'l> {
     /// Constructs a new [`Lexer`] with `line`
     /// as the line to be evaluated.
     ///
     /// # Example
     ///
     /// ```rust
-    /// # #![allow(unused_mut)]
+    /// # #![allow(unused)]
     /// # use libquetzal::Lexer;
-    /// let lexer = Lexer::new("\"foo\"".to_string());
+    /// let lexer = Lexer::new("\"foo\"".as_bytes());
     /// ```
-    pub fn new(line: String) -> Lexer {
-        Self {
-            line: line.into_bytes(),
-            current: 0,
-        }
+    pub fn new(line: &'l [u8]) -> Lexer<'l> {
+        Self { line, current: 0 }
     }
 
     /// The main entry point for lexing an entire line
@@ -53,9 +50,9 @@ impl Lexer {
     ///
     /// ```rust
     /// # use libquetzal::{Lexer, Token, TokenType};
-    /// let l = Lexer::new("fn main".to_string()).lexicalize().unwrap();
+    /// let l = Lexer::new("fn main".as_bytes()).lexicalize().unwrap();
     /// let v: Vec<Token> = vec![
-    ///     Token(TokenType::Identifier, "fn".to_string()),
+    ///     Token(TokenType::Function, "fn".to_string()),
     ///     Token(TokenType::Identifier, "main".to_string()),
     /// ];
     /// assert_eq!(l, v);
@@ -65,18 +62,15 @@ impl Lexer {
         while let Some(c) = self.line.get(self.current) {
             line_result.push(match c {
                 &b'"' => self.get_str()?,
-                &(b'0'..=b'9') => self.get_int(),
-                &(b'A'..=b'Z') | &(b'a'..=b'z') | &b'_' => self.get_ident(),
+                &(b'0'..=b'9') | &(b'A'..=b'Z') | &(b'a'..=b'z') | &b'_' => {
+                    self.get_ident_and_num()
+                }
                 o if o.is_ascii_punctuation() => self.get_op()?,
                 x if x.is_ascii() => {
                     self.current += 1;
                     continue;
                 }
-                _ => {
-                    return Err(LexicalError::InvalidTokenMatch(
-                        char::from(c.to_owned()).into(),
-                    ))
-                }
+                _ => return Err(LexicalError::InvalidTokenMatch(char::from(*c).into())),
             })
         }
         Ok(line_result)
@@ -88,7 +82,7 @@ impl Lexer {
     ///
     /// ```rust
     /// # use libquetzal::{Lexer, Token, TokenType};
-    /// let tok = Lexer::new("\"abc\"".to_string()).get_str();
+    /// let tok = Lexer::new("\"abc\"".as_bytes()).get_str();
     /// assert_eq!(Ok(Token(TokenType::StringLiteral, "abc".to_string())), tok);
     /// ```
     pub fn get_str(&mut self) -> Result<Token, LexicalError> {
@@ -108,7 +102,7 @@ impl Lexer {
                 }
                 &b'\\' => {
                     self.current += 1;
-                    Self::escape(
+                    Self::unescape(
                         self.line
                             .get(self.current)
                             .ok_or(LexicalError::SingleLinedLiteralMultiLinedString)?
@@ -133,50 +127,60 @@ impl Lexer {
         Err(LexicalError::SingleLinedLiteralMultiLinedString)
     }
 
-    /// Turns an integer into it's corresponding [`Token`] form
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// # use libquetzal::{Lexer, Token, TokenType};
-    /// let tok = Lexer::new("13412231".to_string()).get_int();
-    /// assert_eq!(Token(TokenType::NumericLiteral, "13412231".to_string()), tok);
-    /// ```
-    pub fn get_int(&mut self) -> Token {
-        let mut number = String::new();
-        while let Some(x @ b'0'..=b'9') = self.line.get(self.current) {
-            number.push(*x as char);
-            self.current += 1;
-        }
-        Token(TokenType::NumericLiteral, number)
-    }
-
-    /// Turns an identifier into it's corresponding [`Token`] form
+    /// Turns an identifier or number into it's corresponding [`Token`] form
     ///
     /// Recognizes `0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_`
-    /// as valid identifier.
+    /// as valid.
     ///
-    /// Note that under normal circumstances because `int` is searched first,
-    /// identifying `121341` as [`Identifier`] should not happen
+    /// [`Identifier`] and [`NumericLiteral`] is differentiated by the
+    /// starting character.
     ///
     /// [`Identifier`]: TokenType::Identifier
+    /// [`NumericLiteral`]: TokenType::NumericLiteral
     ///
-    /// # Example
+    /// # Identifier Example
     ///
     /// ```rust
     /// # use libquetzal::{Lexer, Token, TokenType};
-    /// let tok = Lexer::new("asdegagt23_".to_string()).get_ident();
+    /// let tok = Lexer::new("asdegagt23_".as_bytes()).get_ident_and_num();
     /// assert_eq!(Token(TokenType::Identifier, "asdegagt23_".to_string()), tok);
     /// ```
-    pub fn get_ident(&mut self) -> Token {
-        let mut number = String::new();
-        while let Some(x @ b'0'..=b'9' | x @ b'A'..=b'Z' | x @ b'a'..=b'z' | x @ b'_') =
-            self.line.get(self.current)
+    ///
+    /// # Numeric Example
+    ///
+    /// ```rust
+    /// # use libquetzal::{Lexer, Token, TokenType};
+    /// let tok = Lexer::new("13412231".as_bytes()).get_ident_and_num();
+    /// assert_eq!(Token(TokenType::NumericLiteral, "13412231".to_string()), tok);
+    /// ```
+    pub fn get_ident_and_num(&mut self) -> Token {
+        let start = self.current;
+        while self
+            .line
+            .get(self.current)
+            .filter(|&&c| c.is_ascii_alphanumeric() || c == b'_')
+            .is_some()
         {
-            number.push(*x as char);
             self.current += 1;
         }
-        Token(TokenType::Identifier, number)
+
+        assert_ne!(start, self.current);
+
+        // this piece of unsafe code is actually sane because of the ascii alphanumeric
+        // criterion on the loop code and the fact that out of bounds is impossible
+        // due to previous `.get` on the loop that must be in bounds to continue
+        let ident = unsafe {
+            String::from_utf8_unchecked(self.line.get_unchecked(start..self.current).to_owned())
+        };
+
+        Token(
+            if ident.starts_with(|c: char| c.is_ascii_digit()) {
+                TokenType::NumericLiteral
+            } else {
+                TokenType::from_keyword(ident.as_str()).unwrap_or(TokenType::Identifier)
+            },
+            ident,
+        )
     }
 
     /// Turns an operator into it's corresponding [`Token`] form
@@ -193,7 +197,7 @@ impl Lexer {
     ///
     /// ```rust
     /// # use libquetzal::{Lexer, Token, TokenType};
-    /// let tok = Lexer::new("+=".to_string()).get_op();
+    /// let tok = Lexer::new("+=".as_bytes()).get_op();
     /// assert_eq!(Ok(Token(TokenType::AssignPlus, "+=".to_string())), tok);
     /// ```
     pub fn get_op(&mut self) -> Result<Token, LexicalError> {
@@ -239,10 +243,10 @@ impl Lexer {
     ///
     /// ```rust
     /// # use libquetzal::Lexer;
-    /// let c = Lexer::escape('n');
+    /// let c = Lexer::unescape('n');
     /// assert_eq!(Ok('\n'), c);
     /// ```
-    pub const fn escape(c: char) -> Result<char, LexicalError> {
+    pub const fn unescape(c: char) -> Result<char, LexicalError> {
         match c {
             'n' => Ok('\n'),
             'r' => Ok('\r'),
@@ -284,9 +288,30 @@ impl Lexer {
     }
 }
 
-impl From<String> for Lexer {
-    fn from(value: String) -> Self {
-        Self::new(value)
+pub fn has_unclosed_symmetric(tokens: &[Token]) -> Result<bool, LexicalError> {
+    let mut a = 0i8;
+    let mut br = 0i8;
+    let mut bk = 0i8;
+    let mut p = 0i8;
+
+    for t in tokens {
+        match t.0 {
+            TokenType::LeftAngle => a += 1,
+            TokenType::LeftCurl => br += 1,
+            TokenType::LeftBracket => bk += 1,
+            TokenType::LeftParen => p += 1,
+            TokenType::RightAngle => a -= 1,
+            TokenType::RightCurl => br -= 1,
+            TokenType::RightBracket => bk -= 1,
+            TokenType::RightParen => p -= 1,
+            _ => continue,
+        }
+    }
+
+    if a < 0 || br < 0 || bk < 0 || p < 0 {
+        Err(LexicalError::UnexpectedRightSymmetric)
+    } else {
+        Ok(a > 0 || br > 0 || bk > 0 || p > 0)
     }
 }
 
@@ -297,7 +322,7 @@ mod tests {
 
     #[test]
     fn lex_scope() {
-        let l = Lexer::new("require use std::io::IO".to_string())
+        let l = Lexer::new("require use std::io::stdio".as_bytes())
             .lexicalize()
             .unwrap();
         let v: Vec<Token> = vec![
@@ -307,7 +332,7 @@ mod tests {
             Token(TokenType::Scope, "::".to_string()),
             Token(TokenType::Identifier, "io".to_string()),
             Token(TokenType::Scope, "::".to_string()),
-            Token(TokenType::Identifier, "IO".to_string()),
+            Token(TokenType::Identifier, "stdio".to_string()),
         ];
         assert_eq!(l, v);
     }
@@ -315,26 +340,25 @@ mod tests {
     #[test]
     fn lex_complex() {
         let l =
-            Lexer::new("fn main start IO::init().println(\"Hello World!\") end -> 0".to_string())
+            Lexer::new("fn [::]main { stdio::println(\"Hello World!\") } -> void".as_bytes())
                 .lexicalize()
                 .unwrap();
         let v: Vec<Token> = vec![
-            Token(TokenType::Identifier, "fn".to_string()),
-            Token(TokenType::Identifier, "main".to_string()),
-            Token(TokenType::Identifier, "start".to_string()),
-            Token(TokenType::Identifier, "IO".to_string()),
+            Token(TokenType::Function, "fn".to_string()),
+            Token(TokenType::LeftBracket, "[".to_string()),
             Token(TokenType::Scope, "::".to_string()),
-            Token(TokenType::Identifier, "init".to_string()),
-            Token(TokenType::LeftParen, "(".to_string()),
-            Token(TokenType::RightParen, ")".to_string()),
-            Token(TokenType::Dot, ".".to_string()),
+            Token(TokenType::RightBracket, "]".to_string()),
+            Token(TokenType::Identifier, "main".to_string()),
+            Token(TokenType::LeftCurl, "{".to_string()),
+            Token(TokenType::Identifier, "stdio".to_string()),
+            Token(TokenType::Scope, "::".to_string()),
             Token(TokenType::Identifier, "println".to_string()),
             Token(TokenType::LeftParen, "(".to_string()),
             Token(TokenType::StringLiteral, "Hello World!".to_string()),
             Token(TokenType::RightParen, ")".to_string()),
-            Token(TokenType::Identifier, "end".to_string()),
+            Token(TokenType::RightCurl, "}".to_string()),
             Token(TokenType::ThinArrow, "->".to_string()),
-            Token(TokenType::NumericLiteral, "0".to_string()),
+            Token(TokenType::Identifier, "void".to_string()),
         ];
         assert_eq!(l, v);
     }
