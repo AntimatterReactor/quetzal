@@ -16,7 +16,7 @@
 
 use crate::error::LexicalError;
 
-#[derive(Debug, Default, PartialEq, Eq)]
+#[derive(Debug, Default, PartialEq, Eq, Clone, Copy)]
 pub enum TokenType {
     #[default]
     None,
@@ -152,4 +152,4 @@ impl TokenType {
 }
 
 #[derive(Debug, Default, PartialEq, Eq)]
-pub struct Token(pub TokenType, pub String);
+pub struct Token(pub TokenType, pub Box<str>);
