@@ -16,7 +16,7 @@ name = "libquetzal"
 name = "quetzalc"
 
 [[bench]]
-name = "quetzalbenching"
+name = "front_end_benchmark"
 harness = false
 
 [[test]]
