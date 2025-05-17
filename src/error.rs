@@ -30,9 +30,11 @@ pub enum LexicalError {
     InvalidCaret(char),
     InvalidEscape(char),
     InvalidTokenMatch(String),
-    SingleLinedLiteralMultiLinedString,
 
+    SingleLinedLiteralMultiLinedString,
     StringWithoutLiteral,
+
+    UnexpectedRightSymmetric,
 }
 
 impl Display for LexicalError {
@@ -42,3 +44,21 @@ impl Display for LexicalError {
 }
 
 impl Error for LexicalError {}
+
+#[derive(Debug, PartialEq, Eq)]
+pub enum ParseError {
+    None,
+    TrailingIf,
+    TrailingFunction,
+    MalformedFunction,
+    UnclosedBlock,
+    UnclosedParen,
+}
+
+impl Display for ParseError {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        write!(f, "")
+    }
+}
+
+impl Error for ParseError {}

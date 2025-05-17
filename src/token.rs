@@ -16,7 +16,7 @@
 
 use crate::error::LexicalError;
 
-#[derive(Debug, Default, PartialEq, Eq, Clone, Copy)]
+#[derive(Debug, Default, PartialEq, Eq, Clone)]
 pub enum TokenType {
     #[default]
     None,
@@ -79,12 +79,11 @@ pub enum TokenType {
     Return,
     Defer,
 
-    True,
-    False,
-
-    StringLiteral,
-    NumericLiteral,
-    Identifier,
+    
+    Boolean(bool),
+    String(Box<str>),
+    Number(Box<str>),
+    Identifier(Box<str>),
 }
 
 impl TokenType {
@@ -144,12 +143,15 @@ impl TokenType {
             "const" => Ok(Self::ConstDecl),
             "return" => Ok(Self::Return),
             "defer" => Ok(Self::Defer),
-            "true" => Ok(Self::True),
-            "false" => Ok(Self::False),
+            "true" => Ok(Self::Boolean(true)),
+            "false" => Ok(Self::Boolean(false)),
             _ => Err(LexicalError::InvalidTokenMatch(s.to_string())),
         }
     }
 }
 
 #[derive(Debug, Default, PartialEq, Eq)]
-pub struct Token(pub TokenType, pub Box<str>);
+pub struct Token {
+    pub t: TokenType,
+    pub pos: usize, // TODO: pos should be a tuple of (usize, usize), and has line and column
+}
