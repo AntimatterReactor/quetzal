@@ -20,6 +20,9 @@ pub use lexer::Lexer;
 mod token;
 pub use token::{Token, TokenType};
 
-pub mod parser;
+mod parser;
+pub use parser::{ast, Parser};
+
+pub mod codegen;
 
 pub mod error;
