@@ -1,12 +1,10 @@
-require use std::io::stdio
+use std::io::{print, println}
 
-fn alias [Vec<String> as x]sum_str
-{
+fn [Vec<String> as x]sum_str {
     x.map(|s| => s.to_int().expect("a number")).sum()
 }
 
-fn [::]main
-{
+fn main {
     let `limited io = stdio::init()
     io.println(
         [

@@ -1,0 +1,42 @@
+use std::io
+
+struct Proto
+start
+    x: i32
+    y: i32
+end
+
+enum State
+start
+    Real,
+    Fake,
+end
+
+impl State
+start
+    pure fn to_bool(self) -> bool
+    start
+        return *self as bool
+    end
+end
+
+variant Value
+{
+    a: i32
+    b: struct {
+        x: i16
+        y: i16
+    }
+}
+
+fn [::]main // without `[::]`, you would need to use ::Value or this::Value or proto::Value
+{
+    let io_inst = io::stdio::init()
+    io_inst.print("input a number: ")
+    let num: i64 = io_inst.getline().as()
+    if num > 5 then
+        io_inst.println("your number is bigger than 5")
+    else
+        io_inst.println("your number is less than 5")
+    end
+} -> void

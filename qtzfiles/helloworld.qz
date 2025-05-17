@@ -1,5 +1,5 @@
-require use std::io::stdio
+use std::io::println
 
-fn [::]main {
-    stdio::println("Hello World!")
+fn main {
+    println("Hello World!")
 } -> void
