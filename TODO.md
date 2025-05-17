@@ -1,11 +1,11 @@
 ## Lexer
 
 - [x] complete the match statement
-- [ ] operator token matching currently doesn't work correctly, fix it
+- [x] operator token matching currently doesn't work correctly, fix it
 
 ## Parser
 
-- [ ] create AST objects
+- [ ] create good AST objects
 
 ## Frontend
 
@@ -17,10 +17,18 @@
 
 ## Backend
 
-- <s>use `inkwell` to use `llvm` to make quetzal (JIT) compiled</s> too complex, unsustainable, and unready.
-- [ ] use `llvm-ir`?
-- [ ] make the compilation code in c and link things up as an extern C library?
+- [ ] use `inkwell` to use `llvm` to make quetzal compiled, with the catch of manual compilation or something
 
 ## Chore
 
 - [x] copyright text on top of every file
+- [ ] contribution guideline & docs
+    - [x] code of conduct
+    - [ ] technical specification
+        - [x] grammar specification
+    - [ ] technical details
+- [ ] complete build instruction
+- [ ] language documentation
+    - [ ] standardized docs static page?
+    - [ ] references
+    - [ ] tutorial

@@ -36,6 +36,11 @@ $ cd quetzal
 $ cargo build
 ```
 
+#### Inkwell and LLVM
+
+Were you to observe [Cargo.toml](Cargo.toml), you might realize that
+`llvm-sys` is set to be 
+
 ## An Overview
 
 ### Syntax
@@ -50,6 +55,13 @@ Any form of contribution is welcome. I might respond late quite often due to my 
 
 Contribution guideline coming soon! (or never, I dunno)
 
+## Technical Details
+
+Here are a few technical details regarding this project as a whole. This is planned to be
+moved to it's own `.md` file soon, consult [the todo list](TODO.md).
+
+### 
+
 ## Disambiguation
 
 Quetzal, also known as `quetzalc` is not to be confused with:
@@ -60,6 +72,11 @@ Quetzal, also known as `quetzalc` is not to be confused with:
     - [Quetzal-RDF's SQL translation engine](https://github.com/Quetzal-RDF/quetzal)
     - [systragroup's modeling library](https://github.com/QuetzalMX/QuetzalXLSReader)
     - etc...
+
+## Contributing
+
+If you're interested in contributing to further development of Quetzal, for which I salute you,
+see [CONTRIBUTING.md](CONTRIBUTING.md)
 
 ## License
 
