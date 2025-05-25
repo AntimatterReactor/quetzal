@@ -36,10 +36,9 @@ $ cd quetzal
 $ cargo build
 ```
 
-#### Inkwell and LLVM
+#### C++ and `cxx`
 
-Were you to observe [Cargo.toml](Cargo.toml), you might realize that
-`llvm-sys` is set to be 
+Were you to observe [Cargo.toml](Cargo.toml) and the codebase itself, you might notice the weird (but good) gluing of c++ and rust together. This is done because llvm is built in c++, and alternative to just directly using c++ to use llvm is—shall I say—pretty lacking.
 
 ## An Overview
 
@@ -54,13 +53,6 @@ Any form of contribution is welcome. I might respond late quite often due to my 
 - Or you can even solve issues if there are any.
 
 Contribution guideline coming soon! (or never, I dunno)
-
-## Technical Details
-
-Here are a few technical details regarding this project as a whole. This is planned to be
-moved to it's own `.md` file soon, consult [the todo list](TODO.md).
-
-### 
 
 ## Disambiguation
 
