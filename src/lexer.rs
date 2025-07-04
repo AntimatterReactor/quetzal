@@ -180,10 +180,9 @@ impl Lexer {
             "somehow, this function is called without a valid identifier or number"
         );
 
-        // this piece of unsafe code is actually sane because of the ascii alphanumeric
-        // criterion on the loop code and the fact that out of bounds is impossible
+        // this piece of code will never panic because out of bounds is impossible
         // due to previous `.get` on the loop that must be in bounds to continue
-        let ident: Box<str> = unsafe { self.line.get_unchecked(start..self.current) }
+        let ident: Box<str> = self.line[start..self.current]
             .iter()
             .collect::<String>()
             .into_boxed_str();
