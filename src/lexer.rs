@@ -337,7 +337,7 @@ mod tests {
 
     #[test]
     fn lex_scope() {
-        let l = Lexer::new("require use std::io::stdio")
+        let l = Lexer::new("require use std::io::println")
             .lexicalize()
             .unwrap();
         let v: Vec<TokenType> = vec![
@@ -347,7 +347,7 @@ mod tests {
             TokenType::Scope,
             TokenType::Identifier("io".into()),
             TokenType::Scope,
-            TokenType::Identifier("stdio".into()),
+            TokenType::Identifier("println".into()),
         ];
         for (i, k) in l.iter().zip(v) {
             assert_eq!(i.t, k);
@@ -356,7 +356,7 @@ mod tests {
 
     #[test]
     fn lex_complex() {
-        let l = Lexer::new("fn [::]main { stdio::println(\"Hello World!\") } -> void")
+        let l = Lexer::new("fn main { std::io::println(\"Hello World!\") } -> void")
             .lexicalize()
             .unwrap();
         let v: Vec<TokenType> = vec![
@@ -366,7 +366,9 @@ mod tests {
             TokenType::RightBracket,
             TokenType::Identifier("main".into()),
             TokenType::LeftCurl,
-            TokenType::Identifier("stdio".into()),
+            TokenType::Identifier("std".into()),
+            TokenType::Scope,
+            TokenType::Identifier("io".into()),
             TokenType::Scope,
             TokenType::Identifier("println".into()),
             TokenType::LeftParen,
