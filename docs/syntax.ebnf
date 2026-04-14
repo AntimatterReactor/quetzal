@@ -1,0 +1,79 @@
+(* Top-level *)
+program       = { statement } ;
+statement     = import_stmt | use_stmt | fn_decl | struct_decl
+              | enum_decl | union_decl | impl_block | expr_stmt ;
+
+(* Imports *)
+import_stmt   = "import" module_path ;
+use_stmt      = "use" module_path [ "::" ( ident | "{" ident { "," ident } "}" | "*" ) ] ;
+module_path   = ident { "::" ident } ;
+
+(* Functions *)
+fn_decl       = [ "@" ident ":" { fn_override } ]
+                "fn" [ "[" expr "]" ] ident
+                [ "(" [ param { "," param } ] ")" ]
+                [ "->" type ]
+                ":" ? block ;
+fn_override   = "fn" ident "(" { pattern } ")" "->" expr ;
+param         = ident ":" type | ident ;
+
+(* Types *)
+type          = ident [ "<" type { "," type } ">" ]
+              | "struct" "{" { field_decl } "}"
+              | "[" type "]" ;
+field_decl    = ident ":" type ;
+
+(* Structs / Enums / Unions *)
+struct_decl   = "struct" ident "{" { field_decl } "}" ;
+enum_decl     = "enum" ident "{" ident { "," ident } "}" ;
+union_decl    = "union" ident "{" [ "@" ident ] { field_decl } "}" ;
+impl_block    = "impl" ident ( "{" | ":" ) { fn_decl } ;
+
+(* Blocks — both brace and indent form *)
+block         = "{" { statement } "}"
+              | ":" INDENT { statement } DEDENT ;
+
+(* Statements *)
+expr_stmt     = [ "let" | "const" ] [ ident ":" type "=" ] expr
+              | "return" expr
+              | "defer" expr
+              | if_stmt | loop_stmt | while_stmt | for_stmt ;
+
+if_stmt       = "if" expr ":" block [ "else" ":" block ] ;
+loop_stmt     = "loop" block ;
+while_stmt    = "while" expr block ;
+for_stmt      = "for" ident "in" expr block ;
+
+(* Expressions — precedence low→high *)
+expr          = assign_expr ;
+assign_expr   = or_expr [ ( "=" | "+=" | "-=" | "*=" | "/=" | "%=" ) assign_expr ] ;
+or_expr       = and_expr { "or" and_expr } ;
+and_expr      = not_expr { "and" not_expr } ;
+not_expr      = [ "not" ] cmp_expr ;
+cmp_expr      = add_expr { ( "?=" | "?!=" | "?<" | "?>" | "?<=" | "?>=" ) add_expr } ;
+add_expr      = mul_expr { ( "+" | "-" ) mul_expr } ;
+mul_expr      = unary_expr { ( "*" | "/" | "%" | "/%" ) unary_expr } ;
+unary_expr    = [ "-" | "~" | "*" ] call_expr ;
+call_expr     = primary { "(" [ arg { "," arg } ] ")"
+                        | "[" expr "]"
+                        | "." ident
+                        | "::" ident } ;
+arg           = expr | closure ;
+closure       = "|" [ ident { "," ident } ] "|" "=>" expr ;
+
+primary       = ident | number | string | bool
+              | "(" expr ")" | "[" [ expr { "," expr } ] "]"
+              | block ;
+
+(* Terminals *)
+ident         = ( LETTER | "_" ) { LETTER | DIGIT | "_" } ;
+number        = DIGIT { DIGIT } [ "." { DIGIT } ] ;
+string        = '"' { char } '"' ;
+bool          = "true" | "false" ;
+
+(* Foreign blocks *)
+foreign_decl  = "foreign" type "as" ident ":" { fn_decl } ;
+
+(* Comments *)
+comment       = "//" .* | "#" .* | "/*" .* "*/" ;
+
