@@ -1,16 +1,13 @@
 use std::io::{print, println}
+use std::vec::Vec
 
-fn [Vec<String> as x]sum_str {
-    x.map(|s| => s.to_int().expect("a number")).sum()
-}
+foreign str[] as x:
+    fn sum_str(x) -> int:
+        return x.map(|s| => s.to_int().expect("a number")).sum()
 
-fn main {
-    let `limited io = stdio::init()
-    io.println(
-        [
-            io.print("input a number: ").get().nln(),
-            io.print("input another number: ").get().nln()
-        ].sum_str().to_str().with_format("result: %")
-    )
-    destroy io // you can also use `~io` achieve the same purpose
-} -> void
+fn main:
+    print("input a number: ")
+    let a = getline()
+    print("input another number: ")
+    let b = getline()
+    println([a,b].sum_str().to_str().with_format("result: %"))

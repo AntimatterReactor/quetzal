@@ -1,27 +1,25 @@
-use std::io
+use std::io::*
 
-struct Proto
-start
+struct Proto {
     x: i32
     y: i32
-end
+}
 
-enum State
-start
+enum State {
     Real,
     Fake,
-end
+}
 
-impl State
-start
-    pure fn to_bool(self) -> bool
-    start
+// Note that yes, `{}` is replaceable with `:` and indents
+# Comments can also use '#',
+/* and the ol' c-style too */
+impl State:
+    pure fn to_bool(self) -> bool:
         return *self as bool
-    end
-end
 
-variant Value
-{
+// Unions are stateless unless you specify it
+union Value {
+    @state
     a: i32
     b: struct {
         x: i16
@@ -29,14 +27,10 @@ variant Value
     }
 }
 
-fn [::]main // without `[::]`, you would need to use ::Value or this::Value or proto::Value
-{
-    let io_inst = io::stdio::init()
-    io_inst.print("input a number: ")
-    let num: i64 = io_inst.getline().as()
-    if num > 5 then
-        io_inst.println("your number is bigger than 5")
-    else
-        io_inst.println("your number is less than 5")
-    end
-} -> void
+fn main:
+    print("input a number: ")
+    let num: i64 = getline().as()
+    if num > 5:
+        println("your number is bigger than 5")
+    else:
+        println("your number is less than 5")

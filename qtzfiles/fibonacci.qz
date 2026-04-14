@@ -1,15 +1,12 @@
-use std::io::printd
+import std::io
 
-fn fibonacci(u32 x) {
+fn fibonacci(u32 x) -> u32:
     return fibonacci(x - 1) + fibonacci(x - 2)
-} -> u32
 
-@override {
+@override:
     fn fibonacci(0) -> 0
     fn fibonacci(1) -> 1
     fn fibonacci(2) -> 1
-}
 
-fn main {
-    printd(::fibonacci(12)) // may be slow, should yield 144
-} -> void
+fn main:
+    io::printf("%d\n", fibonacci(12)) // may be slow, should yield 144
