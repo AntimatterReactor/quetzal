@@ -7,7 +7,7 @@ fn lexer_benchmark(c: &mut Criterion) {
 
     c.bench_function("lexer_simple", |b| {
         b.iter(|| {
-            let mut lexer = Lexer::new(black_box(source));
+            let mut lexer = Lexer::new(black_box(source), 0);
             let _tokens = lexer.lexicalize();
         })
     });
@@ -17,7 +17,7 @@ fn lexer_benchmark(c: &mut Criterion) {
     
     c.bench_function("lexer_complex", |b| {
         b.iter(|| {
-            let mut lexer = Lexer::new(black_box(complex_source));
+            let mut lexer = Lexer::new(black_box(complex_source), 0);
             let _tokens = lexer.lexicalize();
         })
     });
@@ -30,7 +30,7 @@ fn lexer_benchmark(c: &mut Criterion) {
         
         group.bench_with_input(format!("input_size_{}", size), &input, |b, input| {
             b.iter(|| {
-                let mut lexer = Lexer::new(black_box(input));
+                let mut lexer = Lexer::new(black_box(input), 0);
                 let _tokens = lexer.lexicalize();
             })
         });

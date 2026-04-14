@@ -19,10 +19,10 @@ use std::{
     fmt::{self, Display, Formatter},
 };
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
 pub struct Location {
-    line: usize,
-    column: usize,
+    pub line: usize,
+    pub column: usize,
 }
 
 #[derive(Debug, PartialEq, Eq)]

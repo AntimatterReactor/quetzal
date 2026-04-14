@@ -14,17 +14,18 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-use crate::error::LexicalError;
+use crate::error::{LexicalError, Location};
 // use crate::parser::Parser;
 use crate::token::{Token, TokenType};
+use unicode_ident::{is_xid_start, is_xid_continue};
 
 /// Lexer object. Consists of the line
 /// it's currently evaluating and the position
 /// in the line it's currently on.
 #[derive(Debug)]
 pub struct Lexer {
-    line: Box<[char]>,
-    current: usize,
+    line_str: Box<[char]>,
+    current: Location,
 }
 
 /// Implements all the function necessary to
@@ -40,10 +41,13 @@ impl Lexer {
     /// # use libquetzal::Lexer;
     /// let lexer = Lexer::new("\"foo\"");
     /// ```
-    pub fn new(line: &str) -> Lexer {
+    pub fn new(line_input: &str, line_no: usize) -> Lexer {
         Self {
-            line: line.chars().collect(),
-            current: 0,
+            line_str: line_input.chars().collect(),
+            current: Location {
+                line: line_no,
+                column: 0
+            },
         }
     }
 
@@ -64,13 +68,13 @@ impl Lexer {
     /// ```
     pub fn lexicalize(&mut self) -> Result<Vec<Token>, LexicalError> {
         let mut line_result: Vec<Token> = Vec::new();
-        while let Some(c) = self.line.get(self.current) {
+        while let Some(c) = self.line_str.get(self.current.column) {
             line_result.push(match c {
                 &'"' => self.get_str()?,
-                &('0'..='9') | &('A'..='Z') | &('a'..='z') | &'_' => self.get_ident_and_num(),
+                c if is_xid_start(*c) => self.get_ident_and_num(),
                 o if o.is_ascii_punctuation() => self.get_op()?,
                 x if x.is_ascii() => {
-                    self.current += 1;
+                    self.current.column += 1;
                     continue;
                 }
                 _ => return Err(LexicalError::InvalidTokenMatch(char::from(*c).into())),
@@ -91,36 +95,36 @@ impl Lexer {
     pub fn get_str(&mut self) -> Result<Token, LexicalError> {
         // Due to the way this is used, make sure that the first character
         // is a double quotation so that it can be safely skipped
-        if self.line.get(self.current) != Some(&'"') {
+        if self.line_str.get(self.current.column) != Some(&'"') {
             return Err(LexicalError::StringWithoutLiteral);
         }
-        self.current += 1;
+        self.current.column += 1;
 
         let mut strstring = String::new();
-        while let Some(c) = self.line.get(self.current) {
+        while let Some(c) = self.line_str.get(self.current.column) {
             strstring.push(match c {
                 &'"' => {
-                    self.current += 1;
+                    self.current.column += 1;
                     return Ok(Token {
                         t: TokenType::String(strstring.into_boxed_str()),
                         pos: self.current,
                     });
                 }
                 &'\\' => {
-                    self.current += 1;
+                    self.current.column += 1;
                     Self::unescape(
-                        self.line
-                            .get(self.current)
+                        self.line_str
+                            .get(self.current.column)
                             .ok_or(LexicalError::SingleLinedLiteralMultiLinedString)?
                             .to_owned()
                             .into(),
                     )?
                 }
                 &'^' => {
-                    self.current += 1;
+                    self.current.column += 1;
                     Self::caret(
-                        self.line
-                            .get(self.current)
+                        self.line_str
+                            .get(self.current.column)
                             .ok_or(LexicalError::SingleLinedLiteralMultiLinedString)?
                             .to_owned()
                             .into(),
@@ -128,7 +132,7 @@ impl Lexer {
                 }
                 &_ => (*c).into(),
             });
-            self.current += 1;
+            self.current.column += 1;
         }
         Err(LexicalError::SingleLinedLiteralMultiLinedString)
     }
@@ -164,25 +168,25 @@ impl Lexer {
     /// assert_eq!(TokenType::Number("13412231".into()), tok.t);
     /// ```
     pub fn get_ident_and_num(&mut self) -> Token {
-        let start = self.current;
+        let start = self.current.column;
         while self
-            .line
-            .get(self.current)
-            .filter(|&&c| c.is_ascii_alphanumeric() || c == '_')
+            .line_str
+            .get(self.current.column)
+            .filter(|&&c| is_xid_continue(c))
             .is_some()
         {
-            self.current += 1;
+            self.current.column += 1;
         }
 
         // asserts that a number or ident of length at least 1 is found
         assert_ne!(
-            start, self.current,
+            start, self.current.column,
             "somehow, this function is called without a valid identifier or number"
         );
 
         // this piece of code will never panic because out of bounds is impossible
         // due to previous `.get` on the loop that must be in bounds to continue
-        let ident: Box<str> = self.line[start..self.current]
+        let ident: Box<str> = self.line_str[start..self.current.column]
             .iter()
             .collect::<String>()
             .into_boxed_str();
@@ -205,7 +209,7 @@ impl Lexer {
     ///
     /// # Panics
     ///
-    /// Panics when `self.line[self.current].is_ascii_punctuation() == false`.
+    /// Panics when `self.line[self.current.column].is_ascii_punctuation() == false`.
     ///
     /// # Example
     ///
@@ -216,17 +220,17 @@ impl Lexer {
     /// ```
     pub fn get_op(&mut self) -> Result<Token, LexicalError> {
         // Make sure that the current character is indeed a punctuation
-        assert!(self.line[self.current].is_ascii_punctuation());
+        assert!(self.line_str[self.current.column].is_ascii_punctuation());
 
         let mut collect = String::new();
 
-        while let Some(c) = self.line.get(self.current) {
+        while let Some(c) = self.line_str.get(self.current.column) {
             if c.is_ascii_punctuation() {
                 collect.push((*c).into());
             } else {
                 break;
             }
-            self.current += 1;
+            self.current.column += 1;
         }
 
         Ok(Token {
@@ -235,7 +239,7 @@ impl Lexer {
                     Ok(x) => break x,
                     Err(e) => {
                         if collect.pop().is_some() {
-                            self.current -= 1;
+                            self.current.column -= 1;
                         } else {
                             return Err(e);
                         }
@@ -336,7 +340,7 @@ mod tests {
 
     #[test]
     fn lex_scope() {
-        let l = Lexer::new("require use std::io::println")
+        let l = Lexer::new("require use std::io::println", 0)
             .lexicalize()
             .unwrap();
         let v: Vec<TokenType> = vec![
@@ -355,14 +359,11 @@ mod tests {
 
     #[test]
     fn lex_complex() {
-        let l = Lexer::new("fn main { std::io::println(\"Hello World!\") } -> void")
+        let l = Lexer::new("fn main { std::io::println(\"Hello World!\") } -> void", 0)
             .lexicalize()
             .unwrap();
         let v: Vec<TokenType> = vec![
             TokenType::Function,
-            TokenType::LeftBracket,
-            TokenType::Scope,
-            TokenType::RightBracket,
             TokenType::Identifier("main".into()),
             TokenType::LeftCurl,
             TokenType::Identifier("std".into()),

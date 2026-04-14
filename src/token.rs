@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-use crate::error::LexicalError;
+use crate::error::{LexicalError, Location};
 
 #[derive(Debug, Default, PartialEq, Eq, Clone)]
 pub enum TokenType {
@@ -153,5 +153,5 @@ impl TokenType {
 #[derive(Debug, Default, PartialEq, Eq)]
 pub struct Token {
     pub t: TokenType,
-    pub pos: usize, // TODO: pos should be a tuple of (usize, usize), and has line and column
+    pub pos: Location, // TODO: pos should be a tuple of (usize, usize), and has line and column
 }

@@ -26,9 +26,11 @@ name = "quetzalintegration"
 clap = "4"
 log = "0.4"
 cxx = "1.0"
+unicode-ident = "1"
+
 
 [dev-dependencies]
-criterion = "0.5"
+criterion = "0.8"
 
 [build-dependencies]
 cxx-build = "1.0"
