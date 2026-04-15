@@ -150,6 +150,25 @@ impl TokenType {
     }
 }
 
+impl std::fmt::Display for TokenType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let s = match self {
+            Self::Plus => "+", Self::Minus => "-", Self::Mul => "*",
+            Self::Div => "/", Self::Modulo => "%", Self::DivMod => "/%",
+            Self::And => "and", Self::Or => "or", Self::Not => "not",
+            Self::Equal => "?=", Self::NotEqual => "?!=",
+            Self::LessThan => "?<", Self::GreaterThan => "?>",
+            Self::LessThanEqual => "?<=", Self::GreaterThanEqual => "?>=",
+            Self::Assign => "=", Self::AssignPlus => "+=",
+            Self::AssignMinus => "-=", Self::AssignMul => "*=",
+            Self::AssignDiv => "/=", Self::AssignModulo => "%=",
+            Self::Tilde => "~",
+            other => return write!(f, "{other:?}"),
+        };
+        write!(f, "{s}")
+    }
+}
+
 #[derive(Debug, Default, PartialEq, Eq)]
 pub struct Token {
     pub t: TokenType,

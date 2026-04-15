@@ -17,7 +17,7 @@
 use crate::error::{LexicalError, Location};
 // use crate::parser::Parser;
 use crate::token::{Token, TokenType};
-use unicode_ident::{is_xid_start, is_xid_continue};
+use unicode_ident::{is_xid_continue, is_xid_start};
 
 /// Lexer object. Consists of the line
 /// it's currently evaluating and the position
@@ -41,13 +41,10 @@ impl Lexer {
     /// # use libquetzal::Lexer;
     /// let lexer = Lexer::new("\"foo\"");
     /// ```
-    pub fn new(line_input: &str, line_no: usize) -> Lexer {
+    pub fn new(line_input: &str) -> Lexer {
         Self {
             line_str: line_input.chars().collect(),
-            current: Location {
-                line: line_no,
-                column: 0
-            },
+            current: Location { line: 0, column: 0 },
         }
     }
 
@@ -69,11 +66,12 @@ impl Lexer {
     pub fn lexicalize(&mut self) -> Result<Vec<Token>, LexicalError> {
         let mut line_result: Vec<Token> = Vec::new();
         while let Some(c) = self.line_str.get(self.current.column) {
-            line_result.push(match c {
-                &'"' => self.get_str()?,
-                c if is_xid_start(*c) => self.get_ident_and_num(),
+            line_result.push(match *c {
+                '"' => self.get_str()?,
+                i if is_xid_start(i) || i == '_' => self.get_ident(),
                 o if o.is_ascii_punctuation() => self.get_op()?,
-                x if x.is_ascii() => {
+                n if n.is_ascii_digit() => self.get_number(),
+                x if x.is_ascii_control() || x == ' ' => {
                     self.current.column += 1;
                     continue;
                 }
@@ -102,15 +100,15 @@ impl Lexer {
 
         let mut strstring = String::new();
         while let Some(c) = self.line_str.get(self.current.column) {
-            strstring.push(match c {
-                &'"' => {
+            strstring.push(match *c {
+                '"' => {
                     self.current.column += 1;
                     return Ok(Token {
                         t: TokenType::String(strstring.into_boxed_str()),
                         pos: self.current,
                     });
                 }
-                &'\\' => {
+                '\\' => {
                     self.current.column += 1;
                     Self::unescape(
                         self.line_str
@@ -120,7 +118,7 @@ impl Lexer {
                             .into(),
                     )?
                 }
-                &'^' => {
+                '^' => {
                     self.current.column += 1;
                     Self::caret(
                         self.line_str
@@ -130,44 +128,33 @@ impl Lexer {
                             .into(),
                     )?
                 }
-                &_ => (*c).into(),
+                _ => (*c).into(),
             });
             self.current.column += 1;
         }
         Err(LexicalError::SingleLinedLiteralMultiLinedString)
     }
 
-    /// Turns an identifier or number into it's corresponding [`Token`] form
-    ///
-    /// Recognizes `0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_`
-    /// as valid.
+    /// Turns an identifier into it's corresponding [`Token`] form
     ///
     /// [`Identifier`] and [`Number`] is differentiated by the
     /// starting character.
     ///
     /// [`Identifier`]: TokenType::Identifier
     /// [`Number`]: TokenType::Number
-    /// 
+    ///
     /// # Panics
-    /// 
-    /// Panics when the string contains no valid identifier or number.
+    ///
+    /// Panics when the string contains no valid identifier.
     ///
     /// # Identifier Example
     ///
     /// ```rust
     /// # use libquetzal::{Lexer, Token, TokenType};
-    /// let tok = Lexer::new("asdegagt23_").get_ident_and_num();
+    /// let tok = Lexer::new("asdegagt23_").get_ident();
     /// assert_eq!(TokenType::Identifier("asdegagt23_".into()), tok.t);
     /// ```
-    ///
-    /// # Numeric Example
-    ///
-    /// ```rust
-    /// # use libquetzal::{Lexer, Token, TokenType};
-    /// let tok = Lexer::new("13412231").get_ident_and_num();
-    /// assert_eq!(TokenType::Number("13412231".into()), tok.t);
-    /// ```
-    pub fn get_ident_and_num(&mut self) -> Token {
+    pub fn get_ident(&mut self) -> Token {
         let start = self.current.column;
         while self
             .line_str
@@ -181,7 +168,7 @@ impl Lexer {
         // asserts that a number or ident of length at least 1 is found
         assert_ne!(
             start, self.current.column,
-            "somehow, this function is called without a valid identifier or number"
+            "somehow, this function is called without any valid identifier"
         );
 
         // this piece of code will never panic because out of bounds is impossible
@@ -191,12 +178,62 @@ impl Lexer {
             .collect::<String>()
             .into_boxed_str();
 
+        assert!(
+            !ident.starts_with(|c: char| c.is_ascii_digit()),
+            "somehow, this function is called on a number, not identifier"
+        );
+
         Token {
-            t: if ident.starts_with(|c: char| c.is_ascii_digit()) {
-                TokenType::Number(ident)
-            } else {
-                TokenType::from_keyword(&ident).unwrap_or(TokenType::Identifier(ident))
-            },
+            t: TokenType::from_keyword(&ident).unwrap_or(TokenType::Identifier(ident)),
+            pos: self.current,
+        }
+    }
+
+    /// Turns a number into it's corresponding [`Token`] form
+    ///
+    /// [`Identifier`] and [`Number`] is differentiated by the
+    /// starting character.
+    ///
+    /// [`Identifier`]: TokenType::Identifier
+    /// [`Number`]: TokenType::Number
+    ///
+    /// # Panics
+    ///
+    /// Panics when the string contains no valid number.
+    ///
+    /// # Numeric Example
+    ///
+    /// ```rust
+    /// # use libquetzal::{Lexer, Token, TokenType};
+    /// let tok = Lexer::new("13412231").get_number();
+    /// assert_eq!(TokenType::Number("13412231".into()), tok.t);
+    /// ```
+    pub fn get_number(&mut self) -> Token {
+        let start = self.current.column;
+        while self
+            .line_str
+            .get(self.current.column)
+            .filter(|&&c| c.is_ascii_digit())
+            .is_some()
+        {
+            self.current.column += 1;
+        }
+
+        // asserts that a number or ident of length at least 1 is found
+        assert_ne!(
+            start, self.current.column,
+            "somehow, this function is called without a valid number"
+        );
+
+        Token {
+            // this piece of code will never panic because out of bounds is impossible
+            // due to previous `.get` on the loop that must be in bounds to continue
+            t: TokenType::Number(
+                self.line_str[start..self.current.column]
+                    .iter()
+                    .collect::<String>()
+                    .into_boxed_str(),
+            ),
             pos: self.current,
         }
     }
@@ -340,7 +377,7 @@ mod tests {
 
     #[test]
     fn lex_scope() {
-        let l = Lexer::new("require use std::io::println", 0)
+        let l = Lexer::new("require use std::io::println")
             .lexicalize()
             .unwrap();
         let v: Vec<TokenType> = vec![
@@ -359,7 +396,7 @@ mod tests {
 
     #[test]
     fn lex_complex() {
-        let l = Lexer::new("fn main { std::io::println(\"Hello World!\") } -> void", 0)
+        let l = Lexer::new("fn main { std::io::println(\"Hello World!\") } -> void")
             .lexicalize()
             .unwrap();
         let v: Vec<TokenType> = vec![
