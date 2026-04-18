@@ -31,6 +31,8 @@ pub enum LexicalError {
     InvalidEscape(char),
     InvalidTokenMatch(String),
 
+    UnknownCharacter(char),
+    
     SingleLinedLiteralMultiLinedString,
     StringWithoutLiteral,
 
@@ -39,7 +41,17 @@ pub enum LexicalError {
 
 impl Display for LexicalError {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        write!(f, "")
+        if let Self::InvalidTokenMatch(s) = self {
+            return write!(f, "Invalid Token '{s}'");
+        }
+
+        let c = match self {
+            Self::InvalidCaret(a) => a,
+            Self::InvalidEscape(e) => e,
+            Self::UnknownCharacter(x) => x,
+            _ => &'*'
+        };
+        write!(f, "{self:?}")
     }
 }
 
@@ -57,7 +69,7 @@ pub enum ParseError {
 
 impl Display for ParseError {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        write!(f, "")
+        write!(f, "{self:?}")
     }
 }
 

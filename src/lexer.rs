@@ -75,7 +75,7 @@ impl Lexer {
                     self.current.column += 1;
                     continue;
                 }
-                _ => return Err(LexicalError::InvalidTokenMatch(char::from(*c).into())),
+                e => return Err(LexicalError::UnknownCharacter(e)),
             })
         }
         Ok(line_result)
@@ -256,33 +256,72 @@ impl Lexer {
     /// assert_eq!(TokenType::AssignPlus, tok.t);
     /// ```
     pub fn get_op(&mut self) -> Result<Token, LexicalError> {
+        let c0 = self.line_str[self.current.column];
+
         // Make sure that the current character is indeed a punctuation
-        assert!(self.line_str[self.current.column].is_ascii_punctuation());
+        assert!(c0.is_ascii_punctuation());
 
-        let mut collect = String::new();
+        let c1 = self.line_str.get(self.current.column + 1);
+        let c2 = self.line_str.get(self.current.column + 2);
 
-        while let Some(c) = self.line_str.get(self.current.column) {
-            if c.is_ascii_punctuation() {
-                collect.push((*c).into());
-            } else {
-                break;
-            }
-            self.current.column += 1;
+        // table slop macro
+        macro_rules! op_table {
+            ($c0:expr, $c1:expr, $c2:expr, $col:expr, [
+                $(($pat0:pat, $pat1:pat, $pat2:pat, $advance:expr) => $tok:expr),* $(,)?
+            ], $err:expr) => {
+                match ($c0, $c1, $c2) {
+                    $(($pat0, $pat1, $pat2) => { $col += $advance; $tok })*
+                    _ => { $col += 1; return Err($err); }
+                }
+            };
         }
+        
+        // Clunky slop, but O(1)
+        let tokentype: TokenType = op_table!(c0, c1, c2, self.current.column, [
+            // ----- Three Chars -----
+            ('?', Some('!'), Some('='), 3) => TokenType::NotEqual,
+            ('?', Some('<'), Some('='), 3) => TokenType::LessThanEqual,
+            ('?', Some('>'), Some('='), 3) => TokenType::GreaterThanEqual,
+
+            // ----- Two Chars -----
+            ('+', Some('='), _, 2) => TokenType::AssignPlus,
+            ('-', Some('='), _, 2) => TokenType::AssignMinus,
+            ('*', Some('='), _, 2) => TokenType::AssignMul,
+            ('/', Some('='), _, 2) => TokenType::AssignDiv,
+            ('%', Some('='), _, 2) => TokenType::AssignModulo,
+            ('?', Some('='), _, 2) => TokenType::Equal,
+            ('?', Some('<'), _, 2) => TokenType::LessThan,
+            ('?', Some('>'), _, 2) => TokenType::GreaterThan,
+            ('-', Some('>'), _, 2) => TokenType::ThinArrow,
+            ('=', Some('>'), _, 2) => TokenType::FatArrow,
+            (':', Some(':'), _, 2) => TokenType::Scope,
+            ('/', Some('%'), _, 2) => TokenType::DivMod,
+
+            // ----- One Char -----
+            ('(', _, _, 1) => TokenType::LeftParen,
+            (')', _, _, 1) => TokenType::RightParen,
+            ('[', _, _, 1) => TokenType::LeftBracket,
+            (']', _, _, 1) => TokenType::RightBracket,
+            ('{', _, _, 1) => TokenType::LeftCurl,
+            ('}', _, _, 1) => TokenType::RightCurl,
+            ('<', _, _, 1) => TokenType::LeftAngle,
+            ('>', _, _, 1) => TokenType::RightAngle,
+            (';', _, _, 1) => TokenType::Semicolon,
+            (',', _, _, 1) => TokenType::Comma,
+            ('.', _, _, 1) => TokenType::Dot,
+            (':', _, _, 1) => TokenType::Colon,
+            ('~', _, _, 1) => TokenType::Tilde,
+            ('`', _, _, 1) => TokenType::Tick,
+            ('+', _, _, 1) => TokenType::Plus,
+            ('-', _, _, 1) => TokenType::Minus,
+            ('*', _, _, 1) => TokenType::Mul,
+            ('/', _, _, 1) => TokenType::Div,
+            ('%', _, _, 1) => TokenType::Modulo,
+            ('=', _, _, 1) => TokenType::Assign,
+        ], LexicalError::UnknownCharacter(c0));
 
         Ok(Token {
-            t: loop {
-                match TokenType::from_op(collect.as_str()) {
-                    Ok(x) => break x,
-                    Err(e) => {
-                        if collect.pop().is_some() {
-                            self.current.column -= 1;
-                        } else {
-                            return Err(e);
-                        }
-                    }
-                }
-            },
+            t: tokentype,
             pos: self.current,
         })
     }

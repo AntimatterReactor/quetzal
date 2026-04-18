@@ -87,47 +87,6 @@ pub enum TokenType {
 }
 
 impl TokenType {
-    pub fn from_op(s: &str) -> Result<Self, LexicalError> {
-        match s {
-            "(" => Ok(Self::LeftParen),
-            ")" => Ok(Self::RightParen),
-            "[" => Ok(Self::LeftBracket),
-            "]" => Ok(Self::RightBracket),
-            "{" => Ok(Self::LeftCurl),
-            "}" => Ok(Self::RightCurl),
-            "<" => Ok(Self::LeftAngle),
-            ">" => Ok(Self::RightAngle),
-            ";" => Ok(Self::Semicolon),
-            "," => Ok(Self::Comma),
-            "." => Ok(Self::Dot),
-            ":" => Ok(Self::Colon),
-            "::" => Ok(Self::Scope),
-            "~" => Ok(Self::Tilde),
-            "`" => Ok(Self::Tick),
-            "+" => Ok(Self::Plus),
-            "-" => Ok(Self::Minus),
-            "*" => Ok(Self::Mul),
-            "/" => Ok(Self::Div),
-            "%" => Ok(Self::Modulo),
-            "/%" => Ok(Self::DivMod),
-            "=" => Ok(Self::Assign),
-            "+=" => Ok(Self::AssignPlus),
-            "-=" => Ok(Self::AssignMinus),
-            "*=" => Ok(Self::AssignMul),
-            "/=" => Ok(Self::AssignDiv),
-            "%=" => Ok(Self::AssignModulo),
-            "?=" => Ok(Self::Equal),
-            "?!=" => Ok(Self::NotEqual),
-            "?<" => Ok(Self::LessThan),
-            "?>" => Ok(Self::GreaterThan),
-            "?<=" => Ok(Self::LessThanEqual),
-            "?>=" => Ok(Self::GreaterThanEqual),
-            "->" => Ok(Self::ThinArrow),
-            "=>" => Ok(Self::FatArrow),
-            _ => Err(LexicalError::InvalidTokenMatch(s.to_string())),
-        }
-    }
-
     pub fn from_keyword(s: &str) -> Result<Self, LexicalError> {
         match s {
             "and" => Ok(Self::And),
