@@ -3,7 +3,7 @@ name = "quetzal-lang"
 version = "0.0.1"
 authors = ["Ezra Alvarion <ezraalvarion71@gmail.com>"]
 edition = "2021"
-license = "LGPL-3.0-or-later"
+license = "MIT OR Apache-2.0"
 keywords = ["quetzal", "quetzal-lang", "compiler" ,"command-line utility"]
 categories = ["compilers", "command-line-utilities"]
 

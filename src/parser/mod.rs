@@ -1,3 +1,5 @@
+// Copyright (C) 2024 Ezra A. Derrian
+// SPDX-License-Identifier: MIT OR Apache-2.0
 pub mod ast;
 pub mod types;
 

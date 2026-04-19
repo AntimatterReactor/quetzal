@@ -1,6 +1,15 @@
 # Quetzal
 
+<div align="center">
+  <img src="https://img.shields.io/badge/status-under%20construction-yellow?style=for-the-badge" />
+  <br/>
+  <strong>⚠️ Quetzal is not ready for use. Expect breaking changes.</strong>
+</div>
+
+<br/>
+
 The wise language.
+
 
 > Not to be confused with the 90's Z-machine [_Quetzal File Format_](https://en.wikipedia.org/wiki/Quetzal_file_format),<br>
 > nor to be confused with other quetzal projects, see [Disambiguation](#disambiguation).
@@ -26,7 +35,7 @@ Use the following cargo command in your favorite shell:
 $ cargo install quetzal-lang
 ```
 
-Note that, for clarity sake: from this point on, the repo is named `quetzal`, the crate is called `quetzal-lang`, the library is called `libquetzal`, and the executable `quetzalc`. This is indeed confusing on all levels.
+Note that, for clarity sake: from this point on, the repo is named `quetzal`, the crate is called `quetzal-lang`, the library is called `libquetzal`, and the executable `quetzalc`.
 
 ### Building
 
@@ -38,7 +47,7 @@ $ cargo build
 
 #### C++ and `cxx`
 
-Were you to observe [Cargo.toml](Cargo.toml) and the codebase itself, you might notice the weird (but good) gluing of c++ and rust together. This is done because llvm is built in c++, and alternative to just directly using c++ to use llvm is—shall I say—pretty lacking.
+If you observe [Cargo.toml](Cargo.toml) and the codebase itself rather carefully, you might notice the gluing of c++ and rust together. This is done because llvm is built in c++. I don't use `inkwell` etc because it's lacking especially for JIT-compilation.
 
 ## An Overview
 
@@ -72,5 +81,6 @@ see [CONTRIBUTING.md](CONTRIBUTING.md)
 
 ## License
 
-This Program is licensed under the GNU Lesser General Public License version 3.0 or later.<br>
-For more information, see [COPYING](COPYING) and [COPYING.LESSER](COPYING.LESSER).
+Except as otherwise noted, Quetzal is licensed under the Apache License, Version
+2.0 [LICENSE-APACHE](LICENSE-APACHE) or <http://www.apache.org/licenses/LICENSE-2.0> or the MIT
+license [LICENSE-MIT](LICENSE-MIT) or <http://opensource.org/licenses/MIT>, at your option.

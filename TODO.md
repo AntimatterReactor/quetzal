@@ -6,10 +6,15 @@ These are TODOs for quetzal. Every release will start a new TODO list.
 
 - [x] complete the match statement
 - [x] operator token matching currently doesn't work correctly, fix it
+- [ ] fix how line/column is handled
+- [ ] make emit token INDENT and DEDENT (like python, yes)
 
 ## Parser
 
-- [ ] create good AST objects
+- [x] create good AST objects
+- [x] create AST printing
+- [ ] modify `ParserError`s to be meaningful
+- [ ] change AST pretty-printing to iterative instead of recursive
 
 ## Frontend
 
@@ -21,8 +26,13 @@ These are TODOs for quetzal. Every release will start a new TODO list.
 
 ## Backend
 
-- ~~[ ] use `inkwell` to use `llvm` to make quetzal compiled, with the catch of manual compilation or something~~
 - [ ] use `cxx` to interop c++ to use llvm
+
+## Tests and Benchmarks
+
+- [ ] fix lexer unit tests
+- [ ] add lexer benchmarkings
+- [ ] add lexer-parser integration testing
 
 ## Chore
 
