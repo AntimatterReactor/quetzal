@@ -3,7 +3,7 @@
 //! The Quetzal Compiler
 
 use clap::{Arg, ArgAction, Command};
-use libquetzal::{Lexer, Parser};
+use libquetzal::{Lexer, Parser, ast, Token};
 use std::fs;
 use std::path::PathBuf;
 use std::process;
@@ -158,7 +158,6 @@ fn run_repl() {
     println!("Quetzal REPL — :q to quit, :? for help");
 
     let stdin = io::stdin();
-    let mut line_no: usize = 0;
     let mut buf = String::new();
     let mut open_blocks: i32 = 0;
 
@@ -192,7 +191,6 @@ fn run_repl() {
         }
 
         buf.push_str(&line);
-        line_no += 1;
 
         // track indent-block depth heuristic (colon at end = open block)
         if trimmed.ends_with(':') {
@@ -208,12 +206,27 @@ fn run_repl() {
         // eval accumulated buffer
         let src = std::mem::take(&mut buf);
         let mut lexer = Lexer::new(&src);
+        let tokens: Box<[Token]>;
         match lexer.lexicalize() {
-            Err(e) => eprintln!("error: {e}"),
-            Ok(tokens) => {
-                for tok in &tokens {
+            Err(e) => {
+                eprintln!("error: {e}");
+                continue;
+            }
+            Ok(toks) => {
+                for tok in &toks {
                     println!("{tok:?}");
                 }
+                tokens = toks.into_boxed_slice();
+            }
+        }
+        let mut parser = Parser::new(tokens);
+        match parser.construct() {
+            Err(e) => {
+                eprintln!("error: {e}");
+                
+            }
+            Ok(statement) => {
+                ast::print_ast(&statement);
             }
         }
     }
