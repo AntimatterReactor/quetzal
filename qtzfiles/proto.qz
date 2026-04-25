@@ -18,8 +18,8 @@ impl State:
         return *self as bool
 
 // Unions are stateless unless you specify it
+@stated
 union Value {
-    @state
     a: i32
     b: struct {
         x: i16

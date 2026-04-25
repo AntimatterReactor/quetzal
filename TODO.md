@@ -8,6 +8,8 @@ These are TODOs for quetzal. Every release will start a new TODO list.
 - [x] operator token matching currently doesn't work correctly, fix it
 - [ ] fix how line/column is handled
 - [ ] make emit token INDENT and DEDENT (like python, yes)
+- [ ] handle `char`s
+- [ ] ignore comments
 
 ## Parser
 

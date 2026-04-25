@@ -25,6 +25,7 @@ pub enum TokenType {
     Scope,
     Tilde,
     Tick,
+    At,
 
     Plus,
     Minus,
@@ -64,9 +65,12 @@ pub enum TokenType {
     Function,
     LetDecl,
     ConstDecl,
+    Import,
     Return,
-    Defer,
+    Enum,
 
+    Indent,
+    Dedent,
     
     Boolean(bool),
     String(Box<str>),
@@ -89,7 +93,8 @@ impl TokenType {
             "let" => Ok(Self::LetDecl),
             "const" => Ok(Self::ConstDecl),
             "return" => Ok(Self::Return),
-            "defer" => Ok(Self::Defer),
+            "import" => Ok(Self::Import),
+            "enum" => Ok(Self::Enum),
             "true" => Ok(Self::Boolean(true)),
             "false" => Ok(Self::Boolean(false)),
             _ => Err(LexicalError::InvalidTokenMatch(s.to_string())),
@@ -119,5 +124,5 @@ impl std::fmt::Display for TokenType {
 #[derive(Debug, Default, PartialEq, Eq)]
 pub struct Token {
     pub t: TokenType,
-    pub pos: Location, // TODO: pos should be a tuple of (usize, usize), and has line and column
+    pub pos: Location,
 }

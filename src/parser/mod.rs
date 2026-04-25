@@ -44,7 +44,6 @@ impl Parser {
             TokenType::For       => self.parse_for_statement(),
             TokenType::Loop      => self.parse_loop_statement(),
             TokenType::Return    => self.parse_return_statement(),
-            TokenType::Defer     => self.parse_defer_statement(),
             TokenType::LetDecl   => self.parse_let_statement(),
             TokenType::ConstDecl => self.parse_const_statement(),
             _                    => self.parse_expr_statement(),
@@ -147,13 +146,6 @@ impl Parser {
         self.next(); // 'return'
         let val = self.parse_expression()?;
         Ok(Statement::Return(val))
-    }
-
-    /// `defer expr`
-    pub fn parse_defer_statement(&mut self) -> Result<Statement, ParseError> {
-        self.next(); // 'defer'
-        let val = self.parse_expression()?;
-        Ok(Statement::Defer(val))
     }
 
     /// `let ident [: type] = expr`
@@ -436,14 +428,13 @@ impl Parser {
     }
 
     fn next_identifier_or(&mut self, error: ParseError) -> Result<Box<str>, ParseError> {
-        Ok(self.next()
+        self.next()
             .map(|t| match &t.t {
-                TokenType::Identifier(s) => Some(s),
+                TokenType::Identifier(s) => Some(s.clone()),
                 _ => None,
             })
             .flatten()
-            .ok_or(error)?
-            .clone())
+            .ok_or(error)
     }
 }
 
