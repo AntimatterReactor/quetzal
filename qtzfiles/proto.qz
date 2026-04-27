@@ -29,7 +29,7 @@ union Value {
 
 fn main:
     print("input a number: ")
-    let num: i64 = getline().as()
+    let:i64 num = getline().as()
     if num > 5:
         println("your number is bigger than 5")
     else:

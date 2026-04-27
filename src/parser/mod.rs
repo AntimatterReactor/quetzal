@@ -234,8 +234,8 @@ impl Parser {
 
     pub fn parse_cmp(&mut self) -> Result<Expression, ParseError> {
         let cmp_ops = [
-            TokenType::Equal, TokenType::NotEqual, TokenType::LessThan,
-            TokenType::GreaterThan, TokenType::LessThanEqual, TokenType::GreaterThanEqual,
+            TokenType::Equal, TokenType::NotEqual, TokenType::LeftAngle,
+            TokenType::RightAngle, TokenType::LessThanEqual, TokenType::GreaterThanEqual,
         ];
         let mut lhs = self.parse_add()?;
         while self.current_in(&cmp_ops).unwrap_or(false) {

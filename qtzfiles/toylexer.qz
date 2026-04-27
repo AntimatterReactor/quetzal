@@ -1,0 +1,56 @@
+import std::io
+import std::string::String
+import std::vector::Vector
+
+enum TokenType {
+    PLUS,
+    MINUS,
+    MUL,
+    DIV,
+    MOD,
+    LPAREN,
+    RPAREN,
+    NUM
+}
+
+fn main(int argc, char **argv) -> int:
+    if argc < 2:
+        io::println("usage: toylexer <filename>")
+        return 1
+
+    let : String src = io::file(argv[1].into()).read_all()
+
+    let : Vector<TokenType> tokens = Vector<TokenType>::init()
+
+    for c in src:
+        switch c:
+            case '+':
+                tokens.push(TokenType::PLUS)
+                break
+            case '-':
+                tokens.push(TokenType::MINUS)
+                break
+            case '*':
+                tokens.push(TokenType::MUL)
+                break
+            case '/':
+                tokens.push(TokenType::DIV)
+                break
+            case '%':
+                tokens.push(TokenType::MOD)
+                break
+            case '(':
+                tokens.push(TokenType::LPAREN)
+                break
+            case ')': 
+                tokens.push(TokenType::RPAREN)
+                break
+            default:
+                if c.isdigit():
+                    tokens.push(TokenType::NUM)
+                else:
+                    continue
+    
+    tokens.map(|x as int| => io::printf("%d ", x))
+    io::println("")
+    
