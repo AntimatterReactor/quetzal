@@ -23,3 +23,11 @@ impl From<Box<Statement>> for Codegen {
         Self::new(value)
     }
 }
+
+#[cxx::bridge]
+mod ffi {
+    unsafe extern "C++" {
+        include!("quetzal-lang/src-cpp/llvm_bridge.hpp");
+        fn quetzal_init_llvm();
+    }
+}
