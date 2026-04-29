@@ -5,7 +5,7 @@ pub mod types;
 
 use crate::{
     codegen::Codegen,
-    error::{LexicalError, ParseError},
+    error::{LexicalErrorType, ParseError},
     token::{Token, TokenType},
     Lexer,
 };
@@ -22,7 +22,7 @@ impl Parser {
         Self { tokens, current: 0 }
     }
 
-    pub fn from_lexer(mut lexer: Lexer) -> Result<Self, LexicalError> {
+    pub fn from_lexer(mut lexer: Lexer) -> Result<Self, LexicalErrorType> {
         let tokens = lexer.lexicalize()?;
         Ok(Self::new(tokens.into_boxed_slice()))
     }
@@ -345,9 +345,9 @@ impl Parser {
     }
 
     pub fn parse_primary(&mut self) -> Result<Expression, ParseError> {
-        match self.get().ok_or(ParseError::None)?.t.clone() {
+        match self.get().ok_or(ParseError::TokenGetFailure)?.t.clone() {
             TokenType::Identifier(_)  => Ok(Expression::Ident(
-                self.next_identifier_or(ParseError::None)?
+                self.next_identifier_or(ParseError::TokenNextFailure)?
             )),
             TokenType::Number(n)      => { self.next(); Ok(Expression::Number(n)) }
             TokenType::String(s)      => { self.next(); Ok(Expression::Str(s)) }
@@ -355,7 +355,11 @@ impl Parser {
             TokenType::LeftParen      => self.parse_paren(),
             TokenType::LeftBracket    => self.parse_array_or_tuple(),
             TokenType::LeftCurl       => self.parse_block(),
-            _                         => Err(ParseError::None),
+            other                         => {
+                eprintln!("{self:#?}");
+                eprintln!("found: '{other:?}'");
+                Err(ParseError::None)
+            }
         }
     }
 
@@ -371,7 +375,11 @@ impl Parser {
     }
 
     pub fn parse_block(&mut self) -> Result<Expression, ParseError> {
-        self.next(); // '{'
+        let use_indent = match self.next().ok_or(ParseError::None)?.t {
+            TokenType::LeftCurl => false, // '{'
+            TokenType::Colon => true,     // ':'
+            _ => return Err(ParseError::MalformedFunction)
+        };
         let mut statements = Vec::<Statement>::new();
         while !self.current_in(&[TokenType::RightCurl]).ok_or(ParseError::UnclosedBlock)? {
             statements.push(self.parse_statement()?);

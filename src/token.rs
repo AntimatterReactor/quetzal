@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 //! Everything regarding the tokens themselves
 
-use crate::error::{LexicalError, Location};
+use crate::error::{LexicalErrorType, Location};
 
 #[derive(Debug, Default, PartialEq, Eq, Clone)]
 pub enum TokenType {
@@ -86,7 +86,7 @@ pub enum TokenType {
 }
 
 impl TokenType {
-    pub fn from_keyword(s: &str) -> Result<Self, LexicalError> {
+    pub fn from_keyword(s: &str) -> Result<Self, LexicalErrorType> {
         match s {
             "and" => Ok(Self::And),
             "or" => Ok(Self::Or),
@@ -111,7 +111,7 @@ impl TokenType {
             "as" => Ok(Self::As),
             "true" => Ok(Self::Boolean(true)),
             "false" => Ok(Self::Boolean(false)),
-            _ => Err(LexicalError::InvalidTokenMatch(s.to_string())),
+            _ => Err(LexicalErrorType::InvalidTokenMatch(s.to_string())),
         }
     }
 }

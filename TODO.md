@@ -6,10 +6,11 @@ These are TODOs for quetzal. Every release will start a new TODO list.
 
 - [x] complete the match statement
 - [x] operator token matching currently doesn't work correctly, fix it
-- [ ] fix how line/column is handled
+- [x] fix how line/column is handled
 - [ ] make emit token INDENT and DEDENT (like python, yes)
-- [ ] handle `char`s
+- [x] handle `char`s
 - [ ] ignore comments
+- [ ] fix operator table
 
 ## Parser
 
@@ -20,11 +21,11 @@ These are TODOs for quetzal. Every release will start a new TODO list.
 
 ## Frontend
 
-- [ ] create proper cli using `clap`
-
-### REPL
-
+- [x] create proper cli using `clap`
 - [ ] create a `rustyline` REPL
+- [ ] make error handling better
+  - [ ] fix error.rs
+  - [ ] make more descriptive error messages
 
 ## Backend
 

@@ -7,39 +7,96 @@ use std::{
     fmt::{self, Display, Formatter},
 };
 
-#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Location {
     pub line: usize,
     pub column: usize,
 }
 
+impl Display for Location {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        let line = self.line;
+        let column = self.column;
+        write!(f, "line: {line}, column: {column}")
+    }
+}
+
 #[derive(Debug, PartialEq, Eq)]
-pub enum LexicalError {
+pub enum LexicalErrorType {
     InvalidCaret(char),
     InvalidEscape(char),
     InvalidTokenMatch(String),
 
     UnknownCharacter(char),
     
-    SingleLinedLiteralMultiLinedString,
-    StringWithoutLiteral,
+    UnclosedStringLiteral,
+    UnescapedNewlineInString,
+    
+    EmptyCharLiteral,
+    UnclosedCharLiteral,
+    UnescapedNewlineInChar,
 
-    UnexpectedRightSymmetric,
+    UnexpectedRightSymmetric(char),
+}
+
+#[derive(Debug)]
+pub struct LexicalError {
+    err_type: LexicalErrorType,
+    beg_loc: Location,
+    end_loc: Option<Location>
+}
+
+impl LexicalError {
+    pub fn get_type(&self) -> &LexicalErrorType {
+        &self.err_type
+    }
+}
+
+impl From<(LexicalErrorType, Location)> for LexicalError {
+    fn from(source: (LexicalErrorType, Location)) -> Self {
+        Self {
+            err_type: source.0,
+            beg_loc:  source.1,
+            end_loc:  None,
+        }
+    }
+}
+
+impl From<(LexicalErrorType, Location, Location)> for LexicalError {
+    fn from(source: (LexicalErrorType, Location, Location)) -> Self {
+        Self {
+            err_type: source.0,
+            beg_loc:  source.1,
+            end_loc:  Some(source.2),
+        }
+    }
 }
 
 impl Display for LexicalError {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        if let Self::InvalidTokenMatch(s) = self {
-            return write!(f, "Invalid Token '{s}'");
-        }
 
-        let c = match self {
-            Self::InvalidCaret(a) => a,
-            Self::InvalidEscape(e) => e,
-            Self::UnknownCharacter(x) => x,
-            _ => &'*'
-        };
-        write!(f, "{self:?}")
+        use LexicalErrorType::*;
+
+        let loc = self.beg_loc;
+
+        match self.err_type {
+            InvalidCaret(c) => write!(f, "Invalid caret character '^{c}' found at {loc}"),
+            InvalidEscape(c) => write!(f, "Invalid escape character '\\{c}' found at {loc}"),
+            // InvalidTokenMatch(s) => write!(f, "Invalid"), //TODO: figure out if this enum is ever called
+
+            UnknownCharacter(c) => write!(f, "Unknown character '{c}' found at {loc}"),
+            
+            UnclosedStringLiteral => {
+                let end = self.end_loc.expect("for there to be a valid begin of string");
+                write!(f, "Unclosed string literal found beginning at {loc}; terminating at {end}")
+            }
+            UnescapedNewlineInString => {
+                let end = self.end_loc.expect("for there to be a valid begin of string");
+                write!(f, "Unescaped newline found at {end}; with string beginning at {loc}")
+            }
+            UnexpectedRightSymmetric(c) => write!(f, "Unexpected '{c}' without left pair found at {loc}"),
+            _ => write!(f, "{self:?}")
+        }
     }
 }
 
@@ -53,6 +110,9 @@ pub enum ParseError {
     MalformedFunction,
     UnclosedBlock,
     UnclosedParen,
+    
+    TokenGetFailure,
+    TokenNextFailure
 }
 
 impl Display for ParseError {
